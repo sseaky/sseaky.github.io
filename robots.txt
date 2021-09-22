@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /archives/
+Allow: /about/
+Allow: /posts/
+
+Disallow: /categories/
+Disallow: /tags/
+Disallow: /search/
+
+Sitemap: https://sseaky.github.io/sitemap.xml
