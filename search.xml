@@ -46,4 +46,450 @@
         <tag>netflow</tag>
       </tags>
   </entry>
+  <entry>
+    <title>rsyslog学习1--配置格式</title>
+    <url>/posts/f6bedc4e/</url>
+    <content><![CDATA[<p>​    年初搭建了一套ELK来收集现网中网络设备日志，通过设备发送syslog到各idc的rsyslog中转服务器，再转发到kafka，用logstash写入es。因为之前没有做过滤，跑了半年，发现日志量有点大，因为设备型号比较多，cisco/hw/zte/ruijie/h3c/dptech/f5，发的日志也千奇百怪，里面有很多无用的message，对于查找也存在干扰，所以决定好好的对日志进行一下过滤。    </p>
+<p>​    过滤可以布置在两个点，一是rsyslog服务器上，二是logstash。所以先从服务器入手，好好的学习一下rsyslog的配置。主要参考<a href="https://www.rsyslog.com/doc/master/configuration/index.html">文档</a></p>
+<h1 id="配置格式"><a href="#配置格式" class="headerlink" title="配置格式"></a>配置格式</h1><h2 id="basic"><a href="#basic" class="headerlink" title="basic"></a>basic</h2><p>​    又叫 sysklogd 格式。基本配置，一句一行，用了多年。</p>
+<figure class="highlight stata"><table><tr><td class="code"><pre><span class="line">mail.info /<span class="keyword">var</span>/<span class="keyword">log</span>/mail.<span class="keyword">log</span></span><br><span class="line">mail.<span class="keyword">err</span> @@server.example.<span class="keyword">net</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="advanced"><a href="#advanced" class="headerlink" title="advanced"></a>advanced</h2><p>​    又叫 RainerScript 格式。v6开始支持，v7有性能问题，目前版本(v8)正常使用。</p>
+<ul>
+<li>更多的参数，更好的控制</li>
+<li>使用块结构</li>
+<li>容易编写</li>
+<li>可以使用include</li>
+</ul>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">mail.err action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;tcp&quot;</span> queue.<span class="attribute">type</span>=<span class="string">&quot;linkedList&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="obsolete-legacy"><a href="#obsolete-legacy" class="headerlink" title="obsolete legacy"></a>obsolete legacy</h2><p>​    又叫 legacy 格式。如其名，已被 obsoleted。</p>
+<figure class="highlight elixir"><table><tr><td class="code"><pre><span class="line"><span class="variable">$ModLoad</span> <span class="keyword">module</span>-name</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="将配置转为-advanced"><a href="#将配置转为-advanced" class="headerlink" title="将配置转为 advanced"></a>将配置转为 advanced</h1><h2 id="不要过度转换"><a href="#不要过度转换" class="headerlink" title="不要过度转换"></a>不要过度转换</h2><figure class="highlight awk"><table><tr><td class="code"><pre><span class="line">mail.info   <span class="regexp">/var/</span>log/maillog</span><br></pre></td></tr></table></figure>
+
+<p>​    一些basic的配置不需要转换，保持就好。如果要转的话，可以转成</p>
+<figure class="highlight isbl"><table><tr><td class="code"><pre><span class="line"><span class="variable"><span class="keyword">if</span></span> <span class="function"><span class="title">prifilt</span>(<span class="string">&quot;mail.info&quot;</span>) <span class="variable">then</span> &#123;</span></span><br><span class="line"><span class="function">     <span class="title">action</span>(<span class="variable">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="variable">file</span>=<span class="string">&quot;/var/log/maillog&quot;</span>)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>或</p>
+<figure class="highlight isbl"><table><tr><td class="code"><pre><span class="line"><span class="variable"><span class="keyword">if</span></span> <span class="function"><span class="title">prifilt</span>(<span class="string">&quot;mail.info&quot;</span>) <span class="variable">then</span> <span class="title">action</span>(<span class="variable">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="variable">file</span>=<span class="string">&quot;/var/log/maillog&quot;</span>)</span></span><br></pre></td></tr></table></figure>
+
+<p>或</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">mail.<span class="builtin-name">info</span> action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/maillog&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="转换module"><a href="#转换module" class="headerlink" title="转换module"></a>转换module</h2><p>​    legacy语法在多次引用时容易出现问题</p>
+<figure class="highlight gams"><table><tr><td class="code"><pre><span class="line"><span class="meta"><span class="meta-keyword">$ModLoad</span> module-name</span></span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="meta-keyword">$ModLoad</span> imtcp</span></span><br><span class="line"><span class="meta"><span class="meta-keyword">$InputTCPMaxSession</span> 500</span></span><br></pre></td></tr></table></figure>
+
+<p>​    可以转换为</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="title">module</span><span class="params">(load=<span class="string">&quot;module-name&quot;</span>)</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">module</span><span class="params">(load=<span class="string">&quot;imtcp&quot;</span> maxSessions=<span class="string">&quot;500&quot;</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="转换action"><a href="#转换action" class="headerlink" title="转换action"></a>转换action</h2><figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="attribute">filter</span> action</span><br></pre></td></tr></table></figure>
+
+<p>​    转换action并不一定要转换filter，因为不同格式的filter都可以和action一起工作</p>
+<p>​    下面列了一些从basic到advance的action转换</p>
+<table>
+<thead>
+<tr>
+<th align="left"><code>basic</code></th>
+<th align="left"><code>advanced</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">file path (/var/log/…)</td>
+<td align="left">action(type=”<a href="https://www.rsyslog.com/doc/master/configuration/modules/omfile.html">omfile</a>” file=”/var/log…/” …)</td>
+</tr>
+<tr>
+<td align="left">UDP forwarding (@remote)</td>
+<td align="left">action(type=”<a href="https://www.rsyslog.com/doc/master/configuration/modules/omfwd.html">omfwd</a>” target=”remote” protocol=”udp” …)</td>
+</tr>
+<tr>
+<td align="left">TCP forwarding (@@remote)</td>
+<td align="left">action(type=”<a href="https://www.rsyslog.com/doc/master/configuration/modules/omfwd.html">omfwd</a>” target=”remote” protocol=”tcp” …)</td>
+</tr>
+<tr>
+<td align="left">user notify (<code>:omusrmsg:user</code>)</td>
+<td align="left">action(type=”<a href="https://www.rsyslog.com/doc/master/configuration/modules/omusrmsg.html">omusrmsg</a>” users=”user” …)</td>
+</tr>
+<tr>
+<td align="left">module name (<code>:omxxx:..</code>)</td>
+<td align="left">action(type=”<a href="https://www.rsyslog.com/doc/master/configuration/modules/idx_output.html">omxxx</a>” …)</td>
+</tr>
+</tbody></table>
+<p>​    例如</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">OLD: :hostname, contains, <span class="string">&quot;remote-sender&quot;</span> @@central</span><br><span class="line">NEW: :hostname, contains, <span class="string">&quot;remote-sender&quot;</span> action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;central&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;tcp&quot;</span>)</span><br><span class="line"></span><br><span class="line">OLD: <span class="keyword">if</span> <span class="variable">$msg</span> contains <span class="string">&quot;error&quot;</span> then @central</span><br><span class="line">NEW: <span class="keyword">if</span> <span class="variable">$msg</span> contains <span class="string">&quot;error&quot;</span> then action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;central&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;udp&quot;</span>)</span><br><span class="line"></span><br><span class="line">OLD: *.emerg :omusrmsg:*</span><br><span class="line">NEW: *.emerg action(<span class="attribute">type</span>=<span class="string">&quot;omusrmsg&quot;</span> <span class="attribute">users</span>=<span class="string">&quot;*&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="带多个参数的action转换"><a href="#带多个参数的action转换" class="headerlink" title="带多个参数的action转换"></a>带多个参数的action转换</h2><p>​    在basic中，多个action可以使用 &amp; 来连接。</p>
+<figure class="highlight gauss"><table><tr><td class="code"><pre><span class="line">*.<span class="built_in">error</span> /var/<span class="built_in">log</span>/<span class="keyword">errorlog</span></span><br><span class="line">&amp;       <span class="comment">@remote</span></span><br></pre></td></tr></table></figure>
+
+<p>​    在advanced中，使用block来表示</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">*.<span class="builtin-name">error</span> &#123;</span><br><span class="line">        action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/errorlog&quot;</span>)</span><br><span class="line">        action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;remote&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;udp&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    使用 stop 或 ~ 来停止动作</p>
+<figure class="highlight elixir"><table><tr><td class="code"><pre><span class="line"><span class="symbol">:msg</span>, contains, <span class="string">&quot;error&quot;</span> <span class="variable">@remote</span></span><br><span class="line">&amp; ~</span><br><span class="line"></span><br><span class="line"><span class="symbol">:msg</span>, contains, <span class="string">&quot;error&quot;</span> <span class="variable">@remote</span></span><br><span class="line">&amp; stop</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">:msg, contains, <span class="string">&quot;error&quot;</span> &#123;</span><br><span class="line">        action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;remote&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;udp&quot;</span>)</span><br><span class="line">        stop</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>或</p>
+<figure class="highlight puppet"><table><tr><td class="code"><pre><span class="line">if <span class="variable">$msg</span> contains <span class="string">&quot;error&quot;</span> <span class="keyword">then</span> &#123;</span><br><span class="line">        action(<span class="built_in">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="literal">target</span>=<span class="string">&quot;remote&quot;</span> protocol=<span class="string">&quot;udp&quot;</span>)</span><br><span class="line">        <span class="literal">stop</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <tags>
+        <tag>rsyslog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>rsyslog学习2--sysklogd 格式</title>
+    <url>/posts/6fb78df4/</url>
+    <content><![CDATA[<h1 id="sysklogd-格式"><a href="#sysklogd-格式" class="headerlink" title="sysklogd 格式"></a>sysklogd 格式</h1><p>​    这个使用syslog来说明，rsyslog也使用同样的格式</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>​    在 *nix 系统上，<strong>syslogd</strong>(8)的配置文件为 syslog.conf</p>
+<p>​    每一条规则分为 selector 和 action 两部分，由一个以上的空格或tab分割</p>
+<p>​    用为注释，\ 用来合并多选</p>
+<h2 id="SELECTORS"><a href="#SELECTORS" class="headerlink" title="SELECTORS"></a>SELECTORS</h2><p>​    selector 可分为 facility 和 priority 两部分，用 “.” 分割，区分大小写，也可以用 /usr/include/syslog.h 中定义的数字来表示。</p>
+<p>​    facility 用来表示产生日志的子系统，可分为 auth, authpriv, cron, daemon, ftp, kern, lpr, mail, mark, news, security (same as auth，已废弃), syslog, user, uucp and local0 through local7 。任何人都可以发送消息到除了 kern 的任何 facility 。</p>
+<p>​    priority  从低到高分为 debug, info, notice, warning, warn (same as warning，已废弃), err, error (same as err，已废弃), crit, alert, emerg, panic (same as emerg，已废弃)。</p>
+<p>​    默认当消息priority等于或高于配置的级别时，syslogd会动作。也可以使用 “=” 来只指定某一级别。</p>
+<p>​    facility 和 priority 可以用 “*” 来代表所有。none 代表不匹配任何项。</p>
+<p>​    可以同时使用多个 facility，用”,”分割，但同时只能对应一个 priority 。</p>
+<p>​    可以同时使用多个 selectors 来对应一个action，使用”;”分割，执行顺序为从左到右，后者会覆盖前者，可用来作某些 exclude的操作。</p>
+<p>​    可以在 priority  前加 “!” 表示忽略等于或大于该级别的消息，可以和 “=” 一直使用。</p>
+<h2 id="ACTIONS"><a href="#ACTIONS" class="headerlink" title="ACTIONS"></a>ACTIONS</h2><h3 id="Regular-File"><a href="#Regular-File" class="headerlink" title="Regular File"></a>Regular File</h3><p>​    记录到文件，可以使用相对路径，但非常不建议这么做。</p>
+<h3 id="Named-Pipes"><a href="#Named-Pipes" class="headerlink" title="Named Pipes"></a>Named Pipes</h3><p>​    可以发送到 named pipes (fifos)，一般用来debug，需要使用 mkfifo 命令先创建 fifo 设备。</p>
+<h3 id="Terminal-and-Console"><a href="#Terminal-and-Console" class="headerlink" title="Terminal and Console"></a>Terminal and Console</h3><p>​    可以发送到 /dev/console 或 tty。</p>
+<figure class="highlight pgsql"><table><tr><td class="code"><pre><span class="line"># The tcp <span class="keyword">wrapper</span> logs <span class="keyword">with</span> mail.<span class="keyword">info</span>, we display</span><br><span class="line"># <span class="keyword">all</span> the connections <span class="keyword">on</span> tty12</span><br><span class="line">#</span><br><span class="line">mail.=<span class="keyword">info</span>     /dev/tty12</span><br></pre></td></tr></table></figure>
+
+<h3 id="Remote-Machine"><a href="#Remote-Machine" class="headerlink" title="Remote Machine"></a>Remote Machine</h3><p>​    可以从远程接受消息，或发送到远端机器。远程默认不会再转发消息。如果要发送消息到远端，格式为 @remote_hostname</p>
+<p>​    作为接受者，可以使用 named pipe 处理接受到消息。</p>
+<figure class="highlight asciidoc"><table><tr><td class="code"><pre><span class="line"><span class="strong">*.*</span>       @finlandia</span><br></pre></td></tr></table></figure>
+
+<h3 id="List-of-Users"><a href="#List-of-Users" class="headerlink" title="List of Users"></a>List of Users</h3><p>​    通常，critical 消息会发送给本机root，也可以配置多个 user 接受消息，使用”,”分割，如果这些user在线的话，将会在terminal上收到消息。</p>
+<figure class="highlight jboss-cli"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Messages of the priority alert will be directed</span></span><br><span class="line"><span class="comment"># to the operator</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">*<span class="string">.alert</span>      root,joey</span><br></pre></td></tr></table></figure>
+
+<h3 id="Everyone-logged-on"><a href="#Everyone-logged-on" class="headerlink" title="Everyone logged on"></a>Everyone logged on</h3><p>​    一些紧急的消息会发送给所有在线用户，使用 “*” 来启用这个功能。</p>
+<figure class="highlight jboss-cli"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Emergency messages will be displayed using wall</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">*<span class="string">.=emerg</span>      *</span><br></pre></td></tr></table></figure>
+
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><figure class="highlight vala"><table><tr><td class="code"><pre><span class="line"><span class="meta"># Store critical stuff in critical</span></span><br><span class="line"><span class="meta">#</span></span><br><span class="line">*.=crit;kern.none   /<span class="keyword">var</span>/adm/critical</span><br></pre></td></tr></table></figure>
+
+<p>发送crit 到 /var/adm/critical，除了 kern的消息。</p>
+<figure class="highlight awk"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Kernel messages are stored in the kernel file,</span></span><br><span class="line"><span class="comment"># critical messages and higher ones also go</span></span><br><span class="line"><span class="comment"># to another host and to the console</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">kern.*      <span class="regexp">/var/</span>adm/kernel</span><br><span class="line">kern.crit     @finlandia</span><br><span class="line">kern.crit     <span class="regexp">/dev/</span>console</span><br><span class="line">kern.info;kern.!err   <span class="regexp">/var/</span>adm/kernel-info</span><br></pre></td></tr></table></figure>
+
+<p>第四行，发磅kern的info以上的消息，除了err</p>
+<figure class="highlight awk"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Write all mail related logs to a file</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">mail.*;mail.!=info   <span class="regexp">/var/</span>adm/mail</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight pgsql"><table><tr><td class="code"><pre><span class="line"># <span class="keyword">Log</span> <span class="keyword">all</span> mail.<span class="keyword">info</span> <span class="keyword">and</span> news.<span class="keyword">info</span> messages <span class="keyword">to</span> <span class="keyword">info</span></span><br><span class="line">#</span><br><span class="line">mail,news.=<span class="keyword">info</span>    /var/adm/<span class="keyword">info</span></span><br></pre></td></tr></table></figure>
+
+<p>匹配来自mail和news的info消息</p>
+<figure class="highlight pgsql"><table><tr><td class="code"><pre><span class="line"># <span class="keyword">Log</span> <span class="keyword">info</span> <span class="keyword">and</span> <span class="keyword">notice</span> messages <span class="keyword">to</span> messages file</span><br><span class="line">#</span><br><span class="line">*.=<span class="keyword">info</span>;*.=<span class="keyword">notice</span>;\</span><br><span class="line">mail.<span class="keyword">none</span> /var/<span class="keyword">log</span>/messages</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight pgsql"><table><tr><td class="code"><pre><span class="line"># <span class="keyword">Log</span> <span class="keyword">info</span> messages <span class="keyword">to</span> messages file</span><br><span class="line">#</span><br><span class="line">*.=<span class="keyword">info</span>;\</span><br><span class="line">mail,news.<span class="keyword">none</span>  /var/<span class="keyword">log</span>/messages</span><br></pre></td></tr></table></figure>
+
+
+
+]]></content>
+      <tags>
+        <tag>rsyslog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>rsyslog学习3--基本结构</title>
+    <url>/posts/6bfe5ff2/</url>
+    <content><![CDATA[<h1 id="基本结构"><a href="#基本结构" class="headerlink" title="基本结构"></a>基本结构</h1><p>消息会通过 input module进入 rsyslog，然后传递给 ruleset，每一个ruleset 会包含 condition，但条件满足时，执行action。</p>
+<h2 id="原则"><a href="#原则" class="headerlink" title="原则"></a>原则</h2><ul>
+<li>inputs 提交消息给 rulesets<ul>
+<li>如果没有ruleset匹配，将应用默认 ruleset </li>
+</ul>
+</li>
+<li>默认会有一条 ruleset (RSYSLOG_DefaultRuleset)</li>
+<li>用户可定义额外的 rulesets</li>
+<li>每一个ruleset可包含0或多个 rules<ul>
+<li>当ruleset 中为0个rules，这个set就没有意义</li>
+</ul>
+</li>
+<li>一条rule 由一个filter和一个action list</li>
+<li>filters 用来判断和流程控制</li>
+<li>如果filter被匹配，执行对应的action list</li>
+<li>在一个ruleset内，rules被顺序执行</li>
+<li>所有的rules都将被执行，无论之前是不是已经被命中。如果需要停止执行，则必须声明 discard action。所有后续rules将立即中止</li>
+<li>一个 action list 可包含一个或多个动作</li>
+<li>action list 内不能再定义 filters</li>
+<li>多个 action使用 “&amp;” 连接</li>
+<li>actions consist of the action call itself (e.g. “:omusrmsg:”) as well as all action-defining configuration statements ($Action… directives)</li>
+<li>如果要使用 legacy 语法, $Action… directives 必有在调用前声明</li>
+<li>一些指令会和它之前的指令执行结果有关，但有些不是，需要查文档，但需要注意的是，文档也不一定准确。- -b</li>
+<li>v5版本最好被淘汰掉，用v7及以后版本</li>
+<li>legacy 配置<strong>不会</strong>影响 RainerScript objects (e.g. actions).</li>
+</ul>
+<h2 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h2><p>rsyslog.conf 以及它 include的一些文件，可以使用 -f 参数改变</p>
+<h2 id="Statement-类型"><a href="#Statement-类型" class="headerlink" title="Statement 类型"></a>Statement 类型</h2><p>Rsyslog 支持三种语法，见 《学习1》</p>
+<ul>
+<li><strong>sysklogd</strong> </li>
+<li><strong>legacy rsyslog</strong> - v6及之前版本支持，现在的版本也能兼容。每个语句前使用$ 声明。有些插件和特性级需要该方法，因为不是所有的插件都升级到新版本了。。。</li>
+<li><strong>RainerScript</strong>  - 之后主要讨论的内容</li>
+</ul>
+<p>前两种格式和行相关，<strong>RainerScript</strong>  使用块，和行无关</p>
+<h2 id="注释"><a href="#注释" class="headerlink" title="注释"></a>注释</h2><ul>
+<li><strong>#</strong> - 单行</li>
+<li>/* … */ - 多行</li>
+</ul>
+<h2 id="执行顺序"><a href="#执行顺序" class="headerlink" title="执行顺序"></a>执行顺序</h2><p>所有指令从上到下执行</p>
+<h3 id="流程控制"><a href="#流程控制" class="headerlink" title="流程控制"></a>流程控制</h3><ul>
+<li><a href="https://www.rsyslog.com/doc/master/rainerscript/control_structures.html">Control Structures</a></li>
+<li><a href="https://www.rsyslog.com/doc/master/configuration/filters.html">Filter Conditions</a></li>
+</ul>
+<h3 id="数据处理"><a href="#数据处理" class="headerlink" title="数据处理"></a>数据处理</h3><p>使用 <strong>set</strong>, <strong>unset</strong> and <strong>reset</strong> 处理数据，参考  <a href="https://www.rsyslog.com/doc/master/rainerscript/variable_property_types.html">documented here in detail</a></p>
+<h3 id="Inputs"><a href="#Inputs" class="headerlink" title="Inputs"></a>Inputs</h3><p>每一个input都需要一个input模块，参见  <a href="https://www.rsyslog.com/doc/master/configuration/modules/index.html">rsyslog modules</a></p>
+<h3 id="Outputs"><a href="#Outputs" class="headerlink" title="Outputs"></a>Outputs</h3><p>即action,  一些常见的module已预先载入，比如 写文件，有些需要声明</p>
+<h3 id="Rulesets-and-Rules"><a href="#Rulesets-and-Rules" class="headerlink" title="Rulesets and Rules"></a>Rulesets and Rules</h3><p>ruleset会bound到一个input，参见<a href="https://www.rsyslog.com/doc/master/concepts/multi_ruleset.html">rsyslog rulesets</a>.</p>
+<p>典型的ruleset如下</p>
+<figure class="highlight sqf"><table><tr><td class="code"><pre><span class="line">ruleset(<span class="built_in">name</span>=<span class="string">&quot;rulesetname&quot;</span>) &#123;</span><br><span class="line">    <span class="built_in">action</span>(<span class="built_in">type</span>=<span class="string">&quot;omfile&quot;</span> file=<span class="string">&quot;/path/to/file&quot;</span>)</span><br><span class="line">    <span class="built_in">action</span>(<span class="built_in">type</span>=<span class="string">&quot;...&quot;</span> ...)</span><br><span class="line">    <span class="comment">/* and so on... */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>rsyslog基本</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>rsyslog学习4--Templates</title>
+    <url>/posts/77ee3c23/</url>
+    <content><![CDATA[<h1 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h1><p>模板用来指定格式，动态文件名生成。所有的output都会用到模板。不光是文件输出，写入到数据库也需要合适的模块来组成语句。如果没有指定模板，会调用默认的模块，可以在rsconf.c中搜索”template_”查看。</p>
+<p>模板使用 template() 声明，在legacy中，使用 $template</p>
+<p>模板使用的属性可查看 <a href="https://www.rsyslog.com/doc/master/configuration/properties.html">rsyslog properties reference</a></p>
+<h1 id="模板执行"><a href="#模板执行" class="headerlink" title="模板执行"></a>模板执行</h1><p>虽然没有标准化的日志格式，但一般来说，模板应该包含<a href="https://tools.ietf.org/html/rfc5424">RFC5424</a>定义的HEADER，rsyslog解析会用到。</p>
+<p>如果一条消息，没有HOSTANME，没有TAG，内容为 “this:is a message”，刚会被解析成</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line">TAG:<span class="keyword">this</span>:</span><br><span class="line">MSG:<span class="keyword">is</span> a message</span><br></pre></td></tr></table></figure>
+
+<h1 id="The-template-statement"><a href="#The-template-statement" class="headerlink" title="The template() statement"></a>The template() statement</h1><p>这是一个static声明，意味着所有的模板都在配置中被定义，所以模板也不会被if或其它声明所改变。</p>
+<figure class="highlight dsconfig"><table><tr><td class="code"><pre><span class="line"><span class="string">template</span>(<span class="string">parameters</span>) &#123; <span class="built_in">list-descriptions</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>每一个模板都要有一个 <strong>name</strong> ，必有唯一，否则会导致行为不可知。</p>
+<p>每一个模板都有一个参数 <strong>type</strong>，不同的type 可以使能不同的方法解析不同的模板内容。</p>
+<p>模板<strong>不会</strong>影响output插件。</p>
+<p>type有以下几种</p>
+<ul>
+<li>list</li>
+<li>subtree</li>
+<li>string</li>
+<li>plugin</li>
+</ul>
+<h2 id="List"><a href="#List" class="headerlink" title="List"></a>List</h2><p>此模板一系列的<strong>constant</strong>和<strong>variable</strong> 组成，放在{ }中。这种类型常用在结构化的输出，如ommongodb，也能工作在文本型的输出。建议在需要复杂的属性替换中使用此模板，因为基本list的语法比基于string的方法清晰。</p>
+<p>constant包括一些文本和 <strong>property</strong> ，可以对其作一些修改（如转换大小写）</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;tpl1&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span>) &#123;</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;Syslog MSG is: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, &quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;timereported&quot;</span> <span class="attribute">dateFormat</span>=<span class="string">&quot;rfc3339&quot;</span> <span class="attribute">caseConversion</span>=<span class="string">&quot;lower&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;\n&quot;</span>)</span><br><span class="line">     &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="constant-statement"><a href="#constant-statement" class="headerlink" title="constant statement"></a><strong>constant statement</strong></h3><p>主要用于基于文本的输出，可以添加一下文字。比如需要添加换行符</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;outfmt&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span>) &#123;</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;$!usr!msgnum&quot;</span>)</span><br><span class="line">    constant(<span class="attribute">value</span>=<span class="string">&quot;\n&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>特殊字符</p>
+<ul>
+<li>\ - single backslash</li>
+<li>\n - LF</li>
+<li>\ooo - (three octal digits) - represents a character with this octal numerical value (e.g. \101 equals “A”). Note that three octal digits must be given (in contrast to some languages, where between one and three are valid). While we support octal notation, we recommend to use hex notation as this is better known.</li>
+<li>\xhh - (where h is a hex digit) - represents a character with this hexadecimal numerical value (e.g. \x41 equals “A”). Note that two hexadecimal digits must be given (in contrast to some languages where either one or two are valid).</li>
+<li>… some others … list needs to be extended</li>
+</ul>
+<p>如果在不支持的字符前使用\，会导致问题。</p>
+<p>为了帮助对基于文本的输出和结构化输出使用相同的模板，在为结构化输出创建名称/值树时，将忽略没有“outname”参数的常量文本。 因此，如果您想提供一些常量文本，例如 对于 mongodb，您必须包含一个 outname，如下所示：</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;outfmt&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span>) &#123;</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;$!usr!msgnum&quot;</span>)</span><br><span class="line">    constant(<span class="attribute">value</span>=<span class="string">&quot;\n&quot;</span> <span class="attribute">outname</span>=<span class="string">&quot;IWantThisInMyDB&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>要生成一个常量json字段，可以使用format参数，如本例所示</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;outfmt&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span> option.<span class="attribute">jsonf</span>=<span class="string">&quot;on&quot;</span>) &#123;</span><br><span class="line">          property(<span class="attribute">outname</span>=<span class="string">&quot;message&quot;</span> <span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span> <span class="attribute">format</span>=<span class="string">&quot;jsonf&quot;</span>)</span><br><span class="line">          constant(<span class="attribute">outname</span>=<span class="string">&quot;@version&quot;</span> <span class="attribute">value</span>=<span class="string">&quot;1&quot;</span> <span class="attribute">format</span>=<span class="string">&quot;jsonf&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在本例中，constant语句将生成@version: 1。注意，要做到这一点，必须同时给出值和格式参数。</p>
+<p>constant语句支持以下参数:</p>
+<ul>
+<li>value - 值</li>
+<li>outname - 输出字段名称(用于结构化输出)</li>
+<li>format - 可以为空或 jsonf</li>
+</ul>
+<h4 id="Property-statement"><a href="#Property-statement" class="headerlink" title="Property statement"></a>Property statement</h4><p>可以使用option来截取或更改，支持下列参数</p>
+<ul>
+<li><p><strong>name</strong> - 属性名</p>
+</li>
+<li><p><strong>outname</strong> - output字段名 (用于结构化输出)</p>
+</li>
+<li><p><strong>dateformat</strong> - 日期格式 (只用于时间相关属性)，参考 <a href="https://www.rsyslog.com/doc/master/configuration/property_replacer.html#property-options">文档</a> 。<strong>TODO:</strong> 目前，属性替换相关文档只包含了文本模板的一些option，这些option不同于非文本模板。比如，在文本模板中，日期格式option，会以”date-“开头，而在属性语句中不需要（比如”date-year”和”year”）。究其原因，在文本模板中，必须告诉这个这个声明所应用的地方，而在属性中名称中，这点已声明。</p>
+<p>可以自己定义格式，比如 <strong>YYYY-MM-DD</strong>:</p>
+</li>
+</ul>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="title">property</span><span class="params">(name=<span class="string">&quot;timereported&quot;</span> dateformat=<span class="string">&quot;year&quot;</span>)</span></span></span><br><span class="line"><span class="function"><span class="title">constant</span><span class="params">(value=<span class="string">&quot;-&quot;</span>)</span></span></span><br><span class="line"><span class="function"><span class="title">property</span><span class="params">(name=<span class="string">&quot;timereported&quot;</span> dateformat=<span class="string">&quot;month&quot;</span>)</span></span></span><br><span class="line"><span class="function"><span class="title">constant</span><span class="params">(value=<span class="string">&quot;-&quot;</span>)</span></span></span><br><span class="line"><span class="function"><span class="title">property</span><span class="params">(name=<span class="string">&quot;timereported&quot;</span> dateformat=<span class="string">&quot;day&quot;</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>date.inUTC</strong> - date shall be shown in UTC (需要损失一点性能) Available since 8.18.0.</p>
+</li>
+<li><p><strong>caseconversion</strong> - 转换大小定， 取值为 “lower” and “upper”</p>
+</li>
+<li><p><strong>controlcharacters</strong> - 如何处理控制字符。 可使用的值 “escape”, which escapes them, “space”, which replaces them by a single space, and “drop”, which simply removes them from the string.</p>
+</li>
+<li><p><strong>securepath</strong> - 用于在动态文件模板中创建合适的文件路径</p>
+</li>
+<li><p><strong>format</strong> - specify format on a field basis. Supported values are:</p>
+<ul>
+<li>“<a href="https://www.rsyslog.com/doc/master/configuration/property_replacer.html#csv">csv</a>” for use when csv-data is generated</li>
+<li>“<a href="https://www.rsyslog.com/doc/master/configuration/property_replacer.html#json">json</a>” which formats proper json content (but without a field header)</li>
+<li>“<a href="https://www.rsyslog.com/doc/master/configuration/property_replacer.html#jsonf">jsonf</a>” which formats as a complete json field</li>
+<li>“<a href="https://www.rsyslog.com/doc/master/configuration/property_replacer.html#jsonr">jsonr</a>” which avoids double escaping the value but makes it safe for a json field</li>
+<li>“<a href="https://www.rsyslog.com/doc/master/configuration/property_replacer.html#jsonfr">jsonfr</a>” which is the combination of “jsonf” and “jsonr”.</li>
+</ul>
+</li>
+<li><p><strong>position.from</strong> - 获取从该位置起之后的字串 (从1开始)</p>
+</li>
+<li><p><strong>position.to</strong> - 获取位置之前的字串</p>
+</li>
+<li><p><strong>position.relativeToEnd</strong> - 获取到末性的相对偏移的字串. (available since rsyslog v7.3.10)</p>
+</li>
+<li><p><strong>fixedwidth</strong> - 更改position.to行为，当原始字串长度小于时，用空格填充，取值“on” 或 “off” (default) (available since rsyslog v8.13.0)</p>
+</li>
+<li><p><strong>compressspace</strong> - 压缩空格，将多个空格压缩为一个，这个特性会在很晚执行，所以不会影响position.from或position.to的执行。(available since v8.18.0).</p>
+</li>
+<li><p><strong>field.number</strong> - obtain this field match</p>
+</li>
+<li><p><strong>field.delimiter</strong> - decimal value of delimiter character for field extraction</p>
+</li>
+<li><p><strong>regex.expression</strong> - expression to use</p>
+</li>
+<li><p><strong>regex.type</strong> - either ERE or BRE</p>
+</li>
+<li><p><strong>regex.nomatchmode</strong> - what to do if we have no match</p>
+</li>
+<li><p><strong>regex.match</strong> - match to use</p>
+</li>
+<li><p><strong>regex.submatch</strong> - submatch to use</p>
+</li>
+<li><p><strong>droplastlf</strong> - drop a trailing LF, if it is present</p>
+</li>
+<li><p><strong>mandatory</strong> - 强制一个字段。如果设为 “on”，该字段始终会传递给结构输出，即使不存在。如果 “off” (the default)，空字段不会被传递. 这在输出支持动态 schemas 比较有用(like ommongodb).</p>
+</li>
+<li><p><strong>spifno1stsp</strong> - expert options for RFC3164 template processing</p>
+</li>
+<li><p><strong>datatype</strong> - 在jsonf 格式中生效; 允许为原始的字串指定数据类型。有时你在延时时需要用到数字或布尔类型，可以用这个option去更改。</p>
+<ul>
+<li><p>number - value is treated as a JSON number and not enclosed in quotes.</p>
+<p>If the property is empty, the value 0 is generated.</p>
+</li>
+<li><p>string - 字串会被引号包裹</p>
+</li>
+<li><p>auto - value is treated as number if numeric and as string otherwise.</p>
+<p>只对整数有效</p>
+</li>
+<li><p>bool - the value is treated as boolean. If it is empty or 0, it will generate “false”, else “true”.</p>
+</li>
+</ul>
+<p>默认使用string类型. This is a feature of rsyslog 8.1905.0 or later.</p>
+</li>
+<li><p><strong>onEmpty</strong> - 在jsonf 格式中生效; 指定如何处理空值. Possible values are:</p>
+<ul>
+<li>keep - emit the empty element</li>
+<li>skip - completely ignore the element, do not emit anything</li>
+<li>null - emit a JSON ‘null’ value</li>
+</ul>
+<p>If not specified, ‘keep’ is assumed. This is a feature of rsyslog 8.1905.0 or later.</p>
+</li>
+</ul>
+<h2 id="Subtree"><a href="#Subtree" class="headerlink" title="Subtree"></a>Subtree</h2><p>7.1.4后支持</p>
+<p>基于a complete (CEE) subtree 创建模板。用于输出层次给的结构，比如ommongodb。要使用该模板，必须在参数中声明。比如</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 包含所有 CEE 数据</span></span><br><span class="line">template(<span class="attribute">name</span>=”tpl1” <span class="attribute">type</span>=”subtree” <span class="attribute">subtree</span>=”$!”)  </span><br><span class="line"></span><br><span class="line"><span class="comment"># 只包含以 $!usr!tpl2 开始的数据</span></span><br><span class="line">template(<span class="attribute">name</span>=”tpl2” <span class="attribute">type</span>=”subtree” <span class="attribute">subtree</span>=”$!usr!tpl2”)</span><br></pre></td></tr></table></figure>
+
+<p>subtree类型与能用于文件输出，比如 omfile，但没有处理常量文本的能力。一般用来用于调试</p>
+<p>一个例子</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line"><span class="builtin-name">set</span> $!usr!tpl2!msg = <span class="variable">$msg</span>;</span><br><span class="line"><span class="builtin-name">set</span> $!usr!tpl2!dataflow = field(<span class="variable">$msg</span>, 58, 2);</span><br><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;tpl2&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;subtree&quot;</span> <span class="attribute">subtree</span>=<span class="string">&quot;$!usr!tpl2&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="String"><a href="#String" class="headerlink" title="String"></a>String</h2><p>非常类似于legacy模板声明。使用强制参数string。一个模板字串由常量文本和变量替换完成，对于没有复杂操作要求的消息，使用String-base的模板足够了。</p>
+<figure class="highlight dos"><table><tr><td class="code"><pre><span class="line">template(name=&quot;tpl3&quot; <span class="built_in">type</span>=&quot;string&quot;</span><br><span class="line">         string=&quot;<span class="variable">%TIMESTAMP:::date-rfc3339%</span> <span class="variable">%HOSTNAME%</span> <span class="variable">%syslogtag%</span><span class="variable">%msg:::sp-if-no-1st-sp%</span><span class="variable">%msg:::drop-last-lf%</span>\n&quot;</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+
+<p>在“%”之间的内容会被<a href="https://www.rsyslog.com/doc/master/configuration/property_replacer.html">property replacer</a>解释。简而言之，包含了所要处理的property和option，这和list模板中的property对象类似。</p>
+<p>在 “%”之外的就是常量文本，在上面的例子，我们使用了空格来分割，最后加上分行</p>
+<p>可以使用\来打印控制字符。</p>
+<h2 id="Plugin"><a href="#Plugin" class="headerlink" title="Plugin"></a>Plugin</h2><p>模板是于plugin产生（也叫做 strgen或 string generator）。格式是固定的，不可更改。它的性能是非常好（并不是说普通模板慢，只是在一些极端环境中，会有所差别）。使用前必须先载入plugin</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;tpl4&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;plugin&quot;</span> <span class="attribute">plugin</span>=<span class="string">&quot;mystrgen&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="options"><a href="#options" class="headerlink" title="options"></a>options</h1><p>option是可选的。</p>
+<p><strong>option.sql</strong> - 格式化为MySQL语句. 比如在”‘“前添加 \，请注意在MySQL的配置中,<code>NO_BACKSLASH_ESCAPES</code>  模式需要为off (this is the default).</p>
+<p><strong>option.stdsql</strong> -  格式化为 sql server 语句. 将 ‘ 改为两个 ‘’. You must use stdsql together with MySQL if in MySQL configuration the <code>NO_BACKSLASH_ESCAPES</code> is turned on.</p>
+<p><strong>option.json</strong> - format the string suitable for a json statement. This will replace single quotes (“’”) by two single quotes (“’‘”) inside each field.</p>
+<p><strong>option.jsonf</strong> - format the string as JSON object. 这意味着在所有非终结符属性和常量之间都将添加一个前导和后导的花括号{以及一个逗号。</p>
+<p><strong>option.casesensitive</strong> - treat property name references as case sensitive. 默认为 “off”, 所有模板在定时，属性名都会转为小写. With this option turned “on”, property names are looked up as defined in the template. Use this option if you have JSON (<code>$!*</code>), local (<code>!.*</code>), or global (<code>$!\\*</code>) properties which contain uppercase letters. The normal Rsyslog properties are case-insensitive, so this option is not needed for properly referencing those properties.</p>
+<p><strong>option.sql</strong>, <strong>option.stdsql</strong>, and <strong>option.json</strong> 是相互排斥的。</p>
+<p>在使用<strong>sql</strong> or <strong>stdsql</strong> 向数据库写入时，要注意确保使用正确格式，防止被注入,  <strong>If you choose the wrong one, you are still vulnerable to sql injection.</strong> The sql option 可以使用在文件中 - 比如想把它们导入到别的机器数据库中。如果没有必要，就不要使用这些选项同，会带来性能的损耗</p>
+<p>默认的数据库模板使用 sql option。</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template (<span class="attribute">name</span>=<span class="string">&quot;TraditionalFormat&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;string&quot;</span></span><br><span class="line"><span class="attribute">string</span>=<span class="string">&quot;%timegenerated% %HOSTNAME% %syslogtag%%msg%\\n&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><h2 id="写入文件"><a href="#写入文件" class="headerlink" title="写入文件"></a>写入文件</h2><figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;FileFormat&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span>) &#123;</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;timestamp&quot;</span> <span class="attribute">dateFormat</span>=<span class="string">&quot;rfc3339&quot;</span>)</span><br><span class="line">    constant(<span class="attribute">value</span>=<span class="string">&quot; &quot;</span>)</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;hostname&quot;</span>)</span><br><span class="line">    constant(<span class="attribute">value</span>=<span class="string">&quot; &quot;</span>)</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;syslogtag&quot;</span>)</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span> <span class="attribute">spifno1stsp</span>=<span class="string">&quot;on&quot;</span> )</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span> <span class="attribute">droplastlf</span>=<span class="string">&quot;on&quot;</span> )</span><br><span class="line">    constant(<span class="attribute">value</span>=<span class="string">&quot;\n&quot;</span>)</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>也可以写成</p>
+<figure class="highlight dos"><table><tr><td class="code"><pre><span class="line">template(name=&quot;FileFormat&quot; <span class="built_in">type</span>=&quot;string&quot;</span><br><span class="line">         string= &quot;<span class="variable">%TIMESTAMP%</span> <span class="variable">%HOSTNAME%</span> <span class="variable">%syslogtag%</span><span class="variable">%msg:::sp-if-no-1st-sp%</span><span class="variable">%msg:::drop-last-lf%</span>\n&quot;</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+
+<p>注意，string模板必须写成一行</p>
+<h2 id="转发到远端（RFC3164）"><a href="#转发到远端（RFC3164）" class="headerlink" title="转发到远端（RFC3164）"></a>转发到远端（RFC3164）</h2><figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;ForwardFormat&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span>) &#123;</span><br><span class="line">    constant(<span class="attribute">value</span>=<span class="string">&quot;&lt;&quot;</span>)</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;pri&quot;</span>)</span><br><span class="line">    constant(<span class="attribute">value</span>=<span class="string">&quot;&gt;&quot;</span>)</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;timestamp&quot;</span> <span class="attribute">dateFormat</span>=<span class="string">&quot;rfc3339&quot;</span>)</span><br><span class="line">    constant(<span class="attribute">value</span>=<span class="string">&quot; &quot;</span>)</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;hostname&quot;</span>)</span><br><span class="line">    constant(<span class="attribute">value</span>=<span class="string">&quot; &quot;</span>)</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;syslogtag&quot;</span> position.<span class="attribute">from</span>=<span class="string">&quot;1&quot;</span> position.<span class="attribute">to</span>=<span class="string">&quot;32&quot;</span>)</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span> <span class="attribute">spifno1stsp</span>=<span class="string">&quot;on&quot;</span> )</span><br><span class="line">    property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span>)</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>等同于</p>
+<figure class="highlight dos"><table><tr><td class="code"><pre><span class="line">template(name=&quot;forwardFormat&quot; <span class="built_in">type</span>=&quot;string&quot;</span><br><span class="line">         string=&quot;&lt;<span class="variable">%PRI%</span>&gt;<span class="variable">%TIMESTAMP:::date-rfc3339%</span> <span class="variable">%HOSTNAME%</span> <span class="variable">%syslogtag:1:32%</span><span class="variable">%msg:::sp-if-no-1st-sp%</span><span class="variable">%msg%</span>&quot;</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+
+<p>写入MySQL</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;StdSQLformat&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span> option.<span class="attribute">sql</span>=<span class="string">&quot;on&quot;</span>) &#123;</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot;insert into SystemEvents (Message, Facility, FromHost, Priority, DeviceReportedTime, ReceivedAt, InfoUnitID, SysLogTag)&quot;</span>)</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot; values (&#x27;&quot;</span>)</span><br><span class="line">        property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span>)</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, &quot;</span>)</span><br><span class="line">        property(<span class="attribute">name</span>=<span class="string">&quot;syslogfacility&quot;</span>)</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot;, &#x27;&quot;</span>)</span><br><span class="line">        property(<span class="attribute">name</span>=<span class="string">&quot;hostname&quot;</span>)</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, &quot;</span>)</span><br><span class="line">        property(<span class="attribute">name</span>=<span class="string">&quot;syslogpriority&quot;</span>)</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot;, &#x27;&quot;</span>)</span><br><span class="line">        property(<span class="attribute">name</span>=<span class="string">&quot;timereported&quot;</span> <span class="attribute">dateFormat</span>=<span class="string">&quot;mysql&quot;</span>)</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, &#x27;&quot;</span>)</span><br><span class="line">        property(<span class="attribute">name</span>=<span class="string">&quot;timegenerated&quot;</span> <span class="attribute">dateFormat</span>=<span class="string">&quot;mysql&quot;</span>)</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, &quot;</span>)</span><br><span class="line">        property(<span class="attribute">name</span>=<span class="string">&quot;iut&quot;</span>)</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot;, &#x27;&quot;</span>)</span><br><span class="line">        property(<span class="attribute">name</span>=<span class="string">&quot;syslogtag&quot;</span>)</span><br><span class="line">        constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;)&quot;</span>)</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>等同于</p>
+<figure class="highlight scilab"><table><tr><td class="code"><pre><span class="line">template(name=<span class="string">&quot;stdSQLformat&quot;</span> <span class="built_in">type</span>=<span class="string">&quot;string&quot;</span> option.sql=<span class="string">&quot;on&quot;</span></span><br><span class="line">         string=<span class="string">&quot;insert into SystemEvents (Message, Facility, FromHost, Priority, DeviceReportedTime, ReceivedAt, InfoUnitID, SysLogTag) values (&#x27;</span>%msg%<span class="string">&#x27;, %syslogfacility%, &#x27;</span>%HOSTNAME%<span class="string">&#x27;, %syslogpriority%, &#x27;</span>%timereported:::date-mysql%<span class="string">&#x27;, &#x27;</span>%timegenerated:::date-mysql%<span class="string">&#x27;, %iut%, &#x27;</span>%syslogtag%<span class="string">&#x27;)&quot;</span></span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+
+<h2 id="JSON"><a href="#JSON" class="headerlink" title="JSON"></a>JSON</h2><p>用于一些RESTful的API，比如ElasticSearch</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;outfmt&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span> option.<span class="attribute">jsonf</span>=<span class="string">&quot;on&quot;</span>) &#123;</span><br><span class="line">         property(<span class="attribute">outname</span>=<span class="string">&quot;@timestamp&quot;</span> <span class="attribute">name</span>=<span class="string">&quot;timereported&quot;</span> <span class="attribute">dateFormat</span>=<span class="string">&quot;rfc3339&quot;</span> <span class="attribute">format</span>=<span class="string">&quot;jsonf&quot;</span>)</span><br><span class="line">         property(<span class="attribute">outname</span>=<span class="string">&quot;host&quot;</span> <span class="attribute">name</span>=<span class="string">&quot;hostname&quot;</span> <span class="attribute">format</span>=<span class="string">&quot;jsonf&quot;</span>)</span><br><span class="line">         property(<span class="attribute">outname</span>=<span class="string">&quot;severity&quot;</span> <span class="attribute">name</span>=<span class="string">&quot;syslogseverity&quot;</span> <span class="attribute">caseConversion</span>=<span class="string">&quot;upper&quot;</span> <span class="attribute">format</span>=<span class="string">&quot;jsonf&quot;</span> <span class="attribute">datatype</span>=<span class="string">&quot;number&quot;</span>)</span><br><span class="line">         property(<span class="attribute">outname</span>=<span class="string">&quot;facility&quot;</span> <span class="attribute">name</span>=<span class="string">&quot;syslogfacility&quot;</span> <span class="attribute">format</span>=<span class="string">&quot;jsonf&quot;</span> <span class="attribute">datatype</span>=<span class="string">&quot;number&quot;</span>)</span><br><span class="line">         property(<span class="attribute">outname</span>=<span class="string">&quot;syslog-tag&quot;</span> <span class="attribute">name</span>=<span class="string">&quot;syslogtag&quot;</span> <span class="attribute">format</span>=<span class="string">&quot;jsonf&quot;</span>)</span><br><span class="line">         property(<span class="attribute">outname</span>=<span class="string">&quot;source&quot;</span> <span class="attribute">name</span>=<span class="string">&quot;app-name&quot;</span> <span class="attribute">format</span>=<span class="string">&quot;jsonf&quot;</span> <span class="attribute">onEmpty</span>=<span class="string">&quot;null&quot;</span>)</span><br><span class="line">         property(<span class="attribute">outname</span>=<span class="string">&quot;message&quot;</span> <span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span> <span class="attribute">format</span>=<span class="string">&quot;jsonf&quot;</span>)</span><br><span class="line"></span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>产生的数据类似于</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;<span class="attr">&quot;@timestamp&quot;</span>:<span class="string">&quot;2018-03-01T01:00:00+00:00&quot;</span>, <span class="attr">&quot;host&quot;</span>:<span class="string">&quot;172.20.245.8&quot;</span>, <span class="attr">&quot;severity&quot;</span>:<span class="number">7</span>, <span class="attr">&quot;facility&quot;</span>:<span class="number">20</span>, <span class="attr">&quot;syslog-tag&quot;</span>:<span class="string">&quot;tag&quot;</span>, <span class="attr">&quot;source&quot;</span>:<span class="string">&quot;tag&quot;</span>, <span class="attr">&quot;message&quot;</span>:<span class="string">&quot; msgnum:00000000:&quot;</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>整理后</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;@timestamp&quot;</span>: <span class="string">&quot;2018-03-01T01:00:00+00:00&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;host&quot;</span>: <span class="string">&quot;172.20.245.8&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;severity&quot;</span>: <span class="number">7</span>,</span><br><span class="line">  <span class="attr">&quot;facility&quot;</span>: <span class="number">20</span>,</span><br><span class="line">  <span class="attr">&quot;syslog-tag&quot;</span>: <span class="string">&quot;tag&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;source&quot;</span>: <span class="string">&quot;tag&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;message&quot;</span>: <span class="string">&quot; msgnum:00000000:&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果 app-name 为空，当设置 <em>onEmpty=”null”</em> 时，输出如下</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;<span class="attr">&quot;@timestamp&quot;</span>:<span class="string">&quot;2018-03-01T01:00:00+00:00&quot;</span>, <span class="attr">&quot;host&quot;</span>:<span class="string">&quot;172.20.245.8&quot;</span>, <span class="attr">&quot;severity&quot;</span>:<span class="number">7</span>, <span class="attr">&quot;facility&quot;</span>:<span class="number">20</span>, <span class="attr">&quot;syslog-tag&quot;</span>:<span class="string">&quot;tag&quot;</span>, <span class="attr">&quot;source&quot;</span>:<span class="literal">null</span>, <span class="attr">&quot;message&quot;</span>:<span class="string">&quot; msgnum:00000000:&quot;</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="为omfile创建动态文件名"><a href="#为omfile创建动态文件名" class="headerlink" title="为omfile创建动态文件名"></a>为omfile创建动态文件名</h2><p>可以为不同的hosts的消息创建不同的文件</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template (<span class="attribute">name</span>=<span class="string">&quot;DynFile&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;string&quot;</span> <span class="attribute">string</span>=<span class="string">&quot;/var/log/system-%HOSTNAME%.log&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="保留的模板名字"><a href="#保留的模板名字" class="headerlink" title="保留的模板名字"></a>保留的模板名字</h2><p>不要使用 “RSYSLOG_” 开始的模板名。一些预定义的模板如下</p>
+<p><strong>RSYSLOG_TraditionalFileFormat</strong> - The “old style” default log file format with low-precision timestamps.</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;RSYSLOG_TraditionalFileFormat&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;string&quot;</span></span><br><span class="line">     <span class="attribute">string</span>=<span class="string">&quot;%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_FileFormat</strong> - A modern-style logfile format similar to TraditionalFileFormat, both with high-precision timestamps and timezone information.</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;RSYSLOG_FileFormat&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span>) &#123;</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;timereported&quot;</span> <span class="attribute">dateFormat</span>=<span class="string">&quot;rfc3339&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot; &quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;hostname&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot; &quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;syslogtag&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span> <span class="attribute">spifno1stsp</span>=<span class="string">&quot;on&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span> <span class="attribute">droplastlf</span>=<span class="string">&quot;on&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;\n&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_TraditionalForwardFormat</strong> - The traditional forwarding format with low-precision timestamps. Most useful if you send messages to other syslogd’s or rsyslogd below version 3.12.5.</p>
+<figure class="highlight dos"><table><tr><td class="code"><pre><span class="line">template(name=&quot;RSYSLOG_TraditionalForwardFormat&quot; <span class="built_in">type</span>=&quot;string&quot;</span><br><span class="line">     string=&quot;&lt;<span class="variable">%PRI%</span>&gt;<span class="variable">%TIMESTAMP%</span> <span class="variable">%HOSTNAME%</span> <span class="variable">%syslogtag:1:32%</span><span class="variable">%msg:::sp-if-no-1st-sp%</span><span class="variable">%msg%</span>&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_SysklogdFileFormat</strong> - Sysklogd compatible log file format. If used with options: <code>$SpaceLFOnReceive on</code>, <code>$EscapeControlCharactersOnReceive off</code>, <code>$DropTrailingLFOnReception off</code>, the log format will conform to sysklogd log format.</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;RSYSLOG_SysklogdFileFormat&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;string&quot;</span></span><br><span class="line">     <span class="attribute">string</span>=<span class="string">&quot;%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg%\n&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_ForwardFormat</strong> - a new high-precision forwarding format very similar to the traditional one, but with high-precision timestamps and timezone information. Recommended to be used when sending messages to rsyslog 3.12.5 or above.</p>
+<figure class="highlight dos"><table><tr><td class="code"><pre><span class="line">template(name=&quot;RSYSLOG_ForwardFormat&quot; <span class="built_in">type</span>=&quot;string&quot;</span><br><span class="line">     string=&quot;&lt;<span class="variable">%PRI%</span>&gt;<span class="variable">%TIMESTAMP:::date-rfc3339%</span> <span class="variable">%HOSTNAME%</span> <span class="variable">%syslogtag:1:32%</span><span class="variable">%msg:::sp-if-no-1st-sp%</span><span class="variable">%msg%</span>&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_SyslogProtocol23Format</strong> - the format specified in IETF’s internet-draft ietf-syslog-protocol-23, which is very close to the actual syslog standard <a href="https://tools.ietf.org/html/rfc5424">RFC5424</a> (we couldn’t update this template as things were in production for quite some time when RFC5424 was finally approved). This format includes several improvements. You may use this format with all relatively recent versions of rsyslog or syslogd.</p>
+<figure class="highlight dos"><table><tr><td class="code"><pre><span class="line">template(name=&quot;RSYSLOG_SyslogProtocol23Format&quot; <span class="built_in">type</span>=&quot;string&quot;</span><br><span class="line">     string=&quot;&lt;<span class="variable">%PRI%</span>&gt;<span class="number">1</span> <span class="variable">%TIMESTAMP:::date-rfc3339%</span> <span class="variable">%HOSTNAME%</span> <span class="variable">%APP-NAME%</span> <span class="variable">%PROCID%</span> <span class="variable">%MSGID%</span> <span class="variable">%STRUCTURED-DATA%</span> <span class="variable">%msg%</span>\n&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_DebugFormat</strong> - a special format used for troubleshooting property problems. This format is meant to be written to a log file. Do <strong>not</strong> use for production or remote forwarding.</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;RSYSLOG_DebugFormat&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span>) &#123;</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;Debug line with all properties:\nFROMHOST: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;fromhost&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, fromhost-ip: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;fromhost-ip&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, HOSTNAME: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;hostname&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, PRI: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;pri&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;,\nsyslogtag &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;syslogtag&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, programname: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;programname&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, APP-NAME: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;app-name&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, PROCID: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;procid&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, MSGID: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;msgid&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;,\nTIMESTAMP: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;timereported&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, STRUCTURED-DATA: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;structured-data&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;,\nmsg: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;\nescaped msg: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span> <span class="attribute">controlcharacters</span>=<span class="string">&quot;drop&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;\ninputname: &quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;inputname&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot; rawmsg: &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;rawmsg&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;\n$!:&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;$!&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;\n$.:&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;$.&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;\n$/:&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;$/&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;\n\n&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_WallFmt</strong> - Contains information about the host and the time the message was generated and at the end the syslogtag and message itself.</p>
+<figure class="highlight taggerscript"><table><tr><td class="code"><pre><span class="line">template(name=&quot;RSYSLOG_WallFmt&quot; type=&quot;string&quot;</span><br><span class="line">     string=&quot;<span class="symbol">\r</span><span class="symbol">\n</span><span class="symbol">\7</span>Message from syslogd@<span class="variable">%HOSTNAME%</span> at <span class="variable">%timegenerated%</span> ...<span class="symbol">\r</span><span class="symbol">\n</span><span class="variable">%syslogtag%</span><span class="variable">%msg%</span><span class="symbol">\n</span><span class="symbol">\r</span>&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_StdUsrMsgFmt</strong> - The syslogtag followed by the message is returned.</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;RSYSLOG_StdUsrMsgFmt&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;string&quot;</span></span><br><span class="line">     <span class="attribute">string</span>=<span class="string">&quot; %syslogtag%%msg%\n\r&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_StdDBFmt</strong> - Generates a insert command with the message properties, into table SystemEvents for a mysql database.</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;RSYSLOG_StdDBFmt&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;list&quot;</span>) &#123;</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;insert into SystemEvents (Message, Facility, FromHost, Priority, DeviceReportedTime, ReceivedAt, InfoUnitID, SysLogTag)&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot; values (&#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;msg&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, &quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;syslogfacility&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;, &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;hostname&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, &quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;syslogpriority&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;, &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;timereported&quot;</span> <span class="attribute">dateFormat</span>=<span class="string">&quot;date-mysql&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;timegenerated&quot;</span> <span class="attribute">dateFormat</span>=<span class="string">&quot;date-mysql&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;, &quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;iut&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;, &#x27;&quot;</span>)</span><br><span class="line">     property(<span class="attribute">name</span>=<span class="string">&quot;syslogtag&quot;</span>)</span><br><span class="line">     constant(<span class="attribute">value</span>=<span class="string">&quot;&#x27;)&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_StdPgSQLFmt</strong> - Generates a insert command with the message properties, into table SystemEvents for a pgsql database.</p>
+<figure class="highlight vim"><table><tr><td class="code"><pre><span class="line">template(name=<span class="string">&quot;RSYSLOG_StdPgSQLFmt&quot;</span> <span class="built_in">type</span>=<span class="string">&quot;string&quot;</span></span><br><span class="line"><span class="built_in">string</span>=<span class="comment">&quot;insert into SystemEvents (Message, Facility, FromHost, Priority, DeviceReportedTime,</span></span><br><span class="line">     ReceivedAt, InfoUnitID, SysLogTag) <span class="built_in">values</span> (<span class="string">&#x27;%msg%&#x27;</span>, %syslogfacility%, <span class="string">&#x27;%HOSTNAME%&#x27;</span>,</span><br><span class="line">     %syslogpriority%, <span class="string">&#x27;%timereported:::date-pgsql%&#x27;</span>, <span class="string">&#x27;%timegenerated:::date-pgsql%&#x27;</span>, %iut%,</span><br><span class="line">     <span class="string">&#x27;%syslogtag%&#x27;</span>)<span class="comment">&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_spoofadr</strong> - Generates a message containing nothing more than the ip address of the sender.</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">template(<span class="attribute">name</span>=<span class="string">&quot;RSYSLOG_spoofadr&quot;</span> <span class="attribute">type</span>=<span class="string">&quot;string&quot;</span> <span class="attribute">string</span>=<span class="string">&quot;%fromhost-ip%&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>RSYSLOG_StdJSONFmt</strong> - Generates a JSON structure containing the message properties.</p>
+<figure class="highlight taggerscript"><table><tr><td class="code"><pre><span class="line">template(name=&quot;RSYSLOG_StdJSONFmt&quot; type=&quot;string&quot;</span><br><span class="line">     string=&quot;&#123;<span class="symbol">\&quot;</span>message<span class="symbol">\&quot;</span>:<span class="symbol">\&quot;</span><span class="variable">%msg:::json%</span><span class="symbol">\&quot;</span>,<span class="symbol">\&quot;</span>fromhost<span class="symbol">\&quot;</span>:<span class="symbol">\&quot;</span><span class="variable">%HOSTNAME:::json%</span><span class="symbol">\&quot;</span>,<span class="symbol">\&quot;</span>facility<span class="symbol">\&quot;</span>:</span><br><span class="line">             <span class="symbol">\&quot;</span><span class="variable">%syslogfacility-text%</span><span class="symbol">\&quot;</span>,<span class="symbol">\&quot;</span>priority<span class="symbol">\&quot;</span>:<span class="symbol">\&quot;</span><span class="variable">%syslogpriority-text%</span><span class="symbol">\&quot;</span>,<span class="symbol">\&quot;</span>timereported<span class="symbol">\&quot;</span>:</span><br><span class="line">             <span class="symbol">\&quot;</span><span class="variable">%timereported:::date-rfc3339%</span><span class="symbol">\&quot;</span>,<span class="symbol">\&quot;</span>timegenerated<span class="symbol">\&quot;</span>:</span><br><span class="line">             <span class="symbol">\&quot;</span><span class="variable">%timegenerated:::date-rfc3339%</span><span class="symbol">\&quot;</span>&#125;&quot;)</span><br></pre></td></tr></table></figure>
+
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3>]]></content>
+      <tags>
+        <tag>rsyslog</tag>
+      </tags>
+  </entry>
 </search>
