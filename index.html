@@ -293,6 +293,1557 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/b1781d21/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/bell.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seaky's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/posts/b1781d21/" itemprop="url">rsyslog学习9 -- Actions 动作</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-28T23:55:38+08:00">
+                2021-09-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/b1781d21/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/posts/b1781d21/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  19
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Actions-动作"><a href="#Actions-动作" class="headerlink" title="Actions 动作"></a>Actions 动作</h1><p>The Action object describe what is to be done with a message. They are implemented via <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/idx_output.html">output modules</a>.</p>
+<p>The action object has different parameters:</p>
+<ul>
+<li>those that apply to all actions and are action specific. These are documented below.</li>
+<li>action队列的参数会应用到所有 action，参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/queue_parameters.html">queue parameters</a>.</li>
+<li>action-specific parameters. These are specific to a certain type of actions. They are documented by the <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/idx_output.html">output modules</a> in question.</li>
+</ul>
+<h2 id="General-Action-Parameters"><a href="#General-Action-Parameters" class="headerlink" title="General Action Parameters"></a>General Action Parameters</h2><p>大小写不敏感</p>
+<ul>
+<li><p><strong>name</strong> word</p>
+<p>This names the action. The name is used for statistics gathering and documentation. 如果没有名字，rsyslog会运达产生一个，编号从1ton</p>
+</li>
+<li><p><strong>type</strong> string</p>
+<p>强制参数， The name of the module that should be used.</p>
+</li>
+<li><p><strong>action.writeAllMarkMessages</strong> <em>on</em>/off</p>
+<p>默认on，每20分钟会发送mark消息给action，无论之前这个action是否被执行过，可以认为是一种心跳。一般设为on</p>
+</li>
+<li><p><strong>action.execOnlyEveryNthTime</strong> integer</p>
+<p>每隔一定的消息执行一次action，比如设为3，第1，2条消息会被丢弃，执行第3条，如是反复</p>
+</li>
+<li><p><strong>action.execOnlyEveryNthTimeout</strong> integer</p>
+<p>每隔一定的时间执行一次action。0表示不启用。在消息间隔很长时，会很有用，</p>
+</li>
+<li><p><strong>action.errorfile</strong> string</p>
+<p><em>New in version 8.32.0.</em></p>
+<p>一条消息由于某些原因执行失败，默认就被丢弃了。</p>
+<p>如果设置了本项，可以输出到指定文件。格式为JSON，包括失败的消息，action的名字，错误码，及错误原因。</p>
+<p><strong>action.execOnlyOnceEveryInterval</strong> integer</p>
+<p>在最后一次执行后指定时间执行Execute action only if the last execute is at last seconds in the past (more info in ommail, but may be used with any action)</p>
+</li>
+<li><p><strong>action.execOnlyWhenPreviousIsSuspended</strong> on/off</p>
+<p>设置为on时，当前一个action被挂起时，才会执行。比如用来自动切换目的地址，当主服务器失败后，发送到备用服务器</p>
+</li>
+<li><p><strong>action.repeatedmsgcontainsoriginalmsg</strong> on/off</p>
+<p>如果消息重复了，会提示“last message repeated n times” messages, 比较消息的n个字符，n至少为80</p>
+</li>
+<li><p><strong>action.resumeRetryCount</strong> integer</p>
+<p>[default 0, -1 means eternal]</p>
+<p>Sets how often an action is retried before it is considered to have failed. Failed actions discard messages.</p>
+</li>
+<li><p><strong>action.resumeInterval</strong> integer</p>
+<p>重试间隔，单位s。为防止在多消耗，每10次失败后，这个间隔扩大， (numRetries / 10 + 1) * action.resumeInterval. 比如30的间隔，在10次失败后会变成60，100次失败后变成 330</p>
+</li>
+<li><p><strong>action.resumeIntervalMax</strong> integer</p>
+<p>Default: 1800 (30 minutes)</p>
+<p>重试间隔最大值</p>
+<p><strong>action.reportSuspension</strong> on/off</p>
+<p>Configures rsyslog to report suspension and reactivation of the action. This is useful to note which actions have problems (e.g. connecting to a remote system) and when. The default for this setting is the equally-named global parameter.</p>
+</li>
+<li><p><strong>action.reportSuspensionContinuation</strong> on/off</p>
+<p>Configures rsyslog to report continuation of action suspension. This emits new messages whenever an action is to be retried, but continues to fail. If set to “on”, <em>action.reportSuspension</em> is also automatically set to “on”. The default for this setting is the equally-named global parameter.</p>
+</li>
+<li><p><strong>action.copyMsg</strong> on/<em>off</em></p>
+<p>Configures action to <em>copy</em> the message if <em>on</em>. Defaults to <em>off</em> (which is how actions have worked traditionally), which causes queue to refer to the original message object, with reference-counting. (Introduced with 8.10.0).</p>
+</li>
+</ul>
+<h2 id="Useful-Links"><a href="#Useful-Links" class="headerlink" title="Useful Links"></a>Useful Links</h2><ul>
+<li>Rainer’s blog posting on the performance of <a target="_blank" rel="noopener" href="https://rainer.gerhards.net/2013/06/rsyslog-performance-main-and-action.html">main and action queue worker threads</a></li>
+</ul>
+<h2 id="Legacy-Format"><a href="#Legacy-Format" class="headerlink" title="Legacy Format"></a>Legacy Format</h2><p><strong>Legacy action很能写正确，有可能的话，</strong> A key problem with legacy format is that a single action is defined via multiple configurations lines, which may be spread all across rsyslog.conf. Even the definition of multiple actions may be intermixed (often not intentional!). If legacy actions format needs to be used (e.g. some modules may not yet implement the RainerScript format), it is strongly recommended to place all configuration statements pertaining to a single action closely together.</p>
+<p>Please also note that legacy action parameters <strong>do not</strong> affect RainerScript action objects. So if you define for example:</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$actionResumeRetryCount</span> <span class="number">10</span></span><br><span class="line"><span class="function"><span class="title">action</span><span class="params">(type=<span class="string">&quot;omfwd&quot;</span> target=<span class="string">&quot;server1.example.net&quot;</span>)</span></span></span><br><span class="line">@@server2<span class="selector-class">.example</span>.net</span><br></pre></td></tr></table></figure>
+
+<p>server1’s “action.resumeRetryCount” parameter is <strong>not</strong> set, instead server2’s is!</p>
+<p>A goal of the new RainerScript action format was to avoid confusion which parameters are actually used. As such, it would be counter-productive to honor legacy action parameters inside a RainerScript definition. As result, both types of action definitions are strictly (and nicely) separated from each other. The bottom line is that if RainerScript actions are used, one does not need to care about which legacy action parameters may (still…) be in effect.</p>
+<p>Note that not all modules necessarily support legacy action format. Especially newer modules are recommended to NOT support it.</p>
+<h3 id="Legacy-Description"><a href="#Legacy-Description" class="headerlink" title="Legacy Description"></a>Legacy Description</h3><p>Templates can be used with many actions. If used, the specified template is used to generate the message content (instead of the default template). To specify a template, write a semicolon after the action value immediately followed by the template name. Beware: templates MUST be defined BEFORE they are used. It is OK to define some templates, then use them in selector lines, define more templates and use use them in the following selector lines. But it is NOT permitted to use a template in a selector line that is above its definition. If you do this, the action will be ignored.</p>
+<p><strong>可以对一个selector使用多个actions</strong> (or more precisely a single filter of such a selector line). 每一个action必须单独一行，以&amp;打头</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">*.=crit <span class="symbol">:omusrmsg</span><span class="symbol">:rger</span></span><br><span class="line">&amp; root</span><br><span class="line">&amp; <span class="regexp">/var/log</span><span class="regexp">/critmsgs</span></span><br></pre></td></tr></table></figure>
+
+<p>These three lines send critical messages to the user rger and root and also store them in /var/log/critmsgs. <strong>Using multiple actions per selector is</strong> convenient and also <strong>offers a performance benefit</strong>. As the filter needs to be evaluated only once, there is less computation required to process the directive compared to the otherwise-equal config directives below:</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">*<span class="string">.=crit</span> <span class="function">:omusrmsg</span><span class="function">:rger</span></span><br><span class="line">*<span class="string">.=crit</span> root</span><br><span class="line">*<span class="string">.=crit</span> <span class="string">/var/log/critmsgs</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Regular-File"><a href="#Regular-File" class="headerlink" title="Regular File"></a>Regular File</h3><p>消息一般会记录到文件 ，文件名使用全路径，以/起始，新版本也支持相对路径，必须以./起始。如“./file-in-current-dir.log”。但相对路径不可靠，必须要经过严格测试。可以在前面加 “-‘ 来省略文件同步，但如果系统崩溃的话可能会丢失消息，但会提高性能，尤其是记录很长的消息。所以如果有可靠的USP，并且要记录很多消息，可以开启 -</p>
+<p>文件名可以是静态，也可以动态，有助于将消息分类保存。</p>
+<p>可以和模板一起工作。首先定义一个文件名的模板，我们取名模板为DynFile，然后使用”?”来调用文件动态文件名</p>
+<blockquote>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="strong">*.*</span> ?DynFile</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="strong">*.*</span> -?DynFile</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>也可以使用模板来输出</p>
+<blockquote>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="strong">*.*</span> ?DynFile;MyTemplate</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>支持自动创建目录</p>
+<blockquote>
+<figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">$template</span> DynFile,<span class="string">&quot;/var/log/%HOSTNAME%/%programname%.log&quot;</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="Named-Pipes"><a href="#Named-Pipes" class="headerlink" title="Named Pipes"></a>Named Pipes</h3><p>This version of rsyslogd(8) has support for logging output to named pipes (fifos). A fifo or named pipe can be used as a destination for log messages by prepending a pipe symbol (“|’‘) to the name of the file. This is handy for debugging. Note that the fifo must be created with the mkfifo(1) command before rsyslogd(8) is started.</p>
+<h3 id="Terminal-and-Console"><a href="#Terminal-and-Console" class="headerlink" title="Terminal and Console"></a>Terminal and Console</h3><p>If the file you specified is a tty, special tty-handling is done, same with /dev/console.</p>
+<h3 id="Remote-Machine"><a href="#Remote-Machine" class="headerlink" title="Remote Machine"></a>Remote Machine</h3><p>要发行其它host，在hostname前加@，默认UDP，如果需要TCP，加@@。TCP不是syslog的官方标准，但另一些app支持，比如syslog-ng或<a target="_blank" rel="noopener" href="https://www.winsyslog.com/">WinSyslog</a>。 </p>
+<p>可以加一些option，不要加空格，用()包围，多个option用逗号分割</p>
+<p><strong>z<number></strong></p>
+<p>Enable zlib-compression for the message. The <number> is the compression level. It can be 1 (lowest gain, lowest CPU overhead) to 9 (maximum compression, highest CPU overhead). The level can also be 0, which means “no compression”. If given, the “z” option is ignored. So this does not make an awful lot of sense. There is hardly a difference between level 1 and 9 for typical syslog messages. You can expect a compression gain between 0% and 30% for typical messages. Very chatty messages may compress up to 50%, but this is seldom seen with typically traffic. Please note that rsyslogd checks the compression gain. Messages with 60 bytes or less will never be compressed. This is because compression gain is pretty unlikely and we prefer to save CPU cycles. Messages over that size are always compressed. However, it is checked if there is a gain in compression and only if there is, the compressed message is transmitted. Otherwise, the uncompressed messages is transmitted. This saves the receiver CPU cycles for decompression. It also prevents small message to actually become larger in compressed form.</p>
+<p><strong>Please note that when a TCP transport is used, compression will also turn on syslog-transport-tls framing. See the “o” option for important information on the implications.</strong></p>
+<p>Compressed messages 能被接受方自动识别，无需配置。</p>
+<p><strong>o</strong></p>
+<p><strong>This option is experimental. Use at your own risk and only if you know why you need it! If in doubt, do NOT turn it on.</strong></p>
+<p>This option is only valid for plain <strong>TCP</strong> based transports. It selects a different framing based on IETF internet draft syslog-transport-tls-06. This framing offers some benefits over traditional LF-based framing. However, the standardization effort is not yet complete. There may be changes in upcoming versions of this standard. Rsyslog will be kept in line with the standard. There is some chance that upcoming changes will be incompatible to the current specification. In this case, all systems using -transport-tls framing must be upgraded. There will be no effort made to retain compatibility between different versions of rsyslog. The primary reason for that is that it seems technically impossible to provide compatibility between some of those changes. So you should take this note very serious. It is not something we do not <em>like</em> to do (and may change our mind if enough people beg…), it is something we most probably <em>can not</em> do for technical reasons (aka: you can beg as much as you like, it won’t change anything…).</p>
+<p>The most important implication is that compressed syslog messages via TCP must be considered with care. Unfortunately, it is technically impossible to transfer compressed records over traditional syslog plain tcp transports, so you are left with two evil choices…</p>
+<blockquote>
+<p>The hostname may be followed by a colon and the destination port.</p>
+</blockquote>
+<p>The following is an example selector line with forwarding:</p>
+<p><em>.</em>  @@(o,z9)192.168.0.1:1470</p>
+<p>In this example, messages are forwarded via plain TCP with experimental framing and maximum compression to the host 192.168.0.1 at port 1470.</p>
+<p><em>.</em> @192.168.0.1</p>
+<p>In the example above, messages are forwarded via UDP to the machine 192.168.0.1, the destination port defaults to 514. Messages will not be compressed.</p>
+<p>Note that IPv6 addresses contain colons. So if an IPv6 address is specified in the hostname part, rsyslogd could not detect where the IP address ends and where the port starts. There is a syntax extension to support this: put square brackets around the address (e.g. “[2001::1]”). Square brackets also work with real host names and IPv4 addresses, too.</p>
+<p>A valid sample to send messages to the IPv6 host 2001::1 at port 515 is as follows:</p>
+<p><em>.</em> @[2001::1]:515</p>
+<p>This works with TCP, too.</p>
+<p><strong>Note to sysklogd users:</strong> sysklogd does <strong>not</strong> support RFC 3164 format, which is the default forwarding template in rsyslog. As such, you will experience duplicate hostnames if rsyslog is the sender and sysklogd is the receiver. The fix is simple: you need to use a different template. Use that one:</p>
+<ul>
+<li><p>$template sysklogd,”&lt;%PRI%&gt;%TIMESTAMP% %syslogtag%%msg%””</p>
+<p><em>.</em> @192.168.0.1;sysklogd</p>
+</li>
+</ul>
+<h3 id="List-of-Users"><a href="#List-of-Users" class="headerlink" title="List of Users"></a>List of Users</h3><p>Usually critical messages are also directed to “root’’ on that machine. You can specify a list of users that shall get the message by simply writing “:omusrmsg: followed by the login name. For example, the send messages to root, use “:omusrmsg:root”. You may specify more than one user by separating them with commas (“,’‘). Do not repeat the “:omusrmsg:” prefix in this case. For example, to send data to users root and rger, use “:omusrmsg:root,rger” (do not use “:omusrmsg:root,:omusrmsg:rger”, this is invalid). If they’re logged in they get the message.</p>
+<h3 id="Everyone-logged-on"><a href="#Everyone-logged-on" class="headerlink" title="Everyone logged on"></a>Everyone logged on</h3><p>Emergency messages often go to all users currently online to notify them that something strange is happening with the system. To specify this wall(1)-feature use an asterisk as the user message destination(“:omusrmsg:*’‘).</p>
+<h3 id="Call-Plugin"><a href="#Call-Plugin" class="headerlink" title="Call Plugin"></a>Call Plugin</h3><p>This is a generic way to call an output plugin. The plugin must support this functionality. Actual parameters depend on the module, so see the module’s doc on what to supply. The general syntax is as follows:</p>
+<p>:modname:params;template</p>
+<p>Currently, the ommysql database output module supports this syntax (in addition to the “&gt;” syntax it traditionally supported). For ommysql, the module name is “ommysql” and the params are the traditional ones. The ;template part is not module specific, it is generic rsyslog functionality available to all modules.</p>
+<p>As an example, the ommysql module may be called as follows:</p>
+<p>:ommysql:dbhost,dbname,dbuser,dbpassword;dbtemplate</p>
+<p>For details, please see the “Database Table” section of this documentation.</p>
+<p>Note: as of this writing, the “:modname:” part is hardcoded into the module. So the name to use is not necessarily the name the module’s plugin file is called.</p>
+<h3 id="Database-Table"><a href="#Database-Table" class="headerlink" title="Database Table"></a>Database Table</h3><p>This allows logging of the message to a database table. Currently, only MySQL databases are supported. However, other database drivers will most probably be developed as plugins. By default, a <a target="_blank" rel="noopener" href="https://www.mwagent.com/">MonitorWare</a>-compatible schema is required for this to work. You can create that schema with the createDB.SQL file that came with the rsyslog package. You can also use any other schema of your liking - you just need to define a proper template and assign this template to the action. The database writer is called by specifying a greater-then sign (“&gt;”) in front of the database connect information. Immediately after that sign the database host name must be given, a comma, the database name, another comma, the database user, a comma and then the user’s password. If a specific template is to be used, a semicolon followed by the template name can follow the connect information. This is as follows: &gt;dbhost,dbname,dbuser,dbpassword;dbtemplate</p>
+<p><strong>Important: to use the database functionality, the MySQL output module must be loaded in the config file</strong> BEFORE the first database table action is used. This is done by placing the</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"><span class="meta-keyword">$ModLoad</span> ommysql</span></span><br></pre></td></tr></table></figure>
+
+<p>directive some place above the first use of the database write (we recommend doing at the beginning of the config file).</p>
+<h3 id="Discard-Stop"><a href="#Discard-Stop" class="headerlink" title="Discard / Stop"></a>Discard / Stop</h3><p>If the discard action is carried out, the received message is immediately discarded. No further processing of it occurs. Discard has primarily been added to filter out messages before carrying on any further processing. For obvious reasons, the results of “discard” are depending on where in the configuration file it is being used. Please note that once a message has been discarded there is no way to retrieve it in later configuration file lines.</p>
+<p>Discard can be highly effective if you want to filter out some annoying messages that otherwise would fill your log files. To do that, place the discard actions early in your log files. This often plays well with property-based filters, giving you great freedom in specifying what you do not want.</p>
+<p>Discard is just the word “stop” with no further parameters:</p>
+<p>stop</p>
+<p>For example,</p>
+<p><em>.</em>  stop</p>
+<p>discards everything (ok, you can achieve the same by not running rsyslogd at all…).</p>
+<p>Note that in legacy configuration the tilde character “~” can also be used instead of the word “stop”.</p>
+<h3 id="Output-Channel"><a href="#Output-Channel" class="headerlink" title="Output Channel"></a>Output Channel</h3><p>Binds an output channel definition (see there for details) to this action. Output channel actions must start with a $-sign, e.g. if you would like to bind your output channel definition “mychannel” to the action, use “$mychannel”. Output channels support template definitions like all all other actions.</p>
+<h3 id="Shell-Execute"><a href="#Shell-Execute" class="headerlink" title="Shell Execute"></a>Shell Execute</h3><p><strong>NOTE: This action is only supported for backwards compatibility. For new configs, use</strong> <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/omprog.html">omprog</a> <strong>instead. It provides a more solid and secure solution with higher performance.</strong></p>
+<p>This executes a program in a subshell. The program is passed the template-generated message as the only command line parameter. Rsyslog waits until the program terminates and only then continues to run.</p>
+<p>^program-to-execute;template</p>
+<p>The program-to-execute can be any valid executable. It receives the template string as a single parameter (argv[1]).</p>
+<p><strong>WARNING:</strong> The Shell Execute action was added to serve an urgent need. While it is considered reasonable save when used with some thinking, its implications must be considered. The current implementation uses a system() call to execute the command. This is not the best way to do it (and will hopefully changed in further releases). Also, proper escaping of special characters is done to prevent command injection. However, attackers always find smart ways to circumvent escaping, so we can not say if the escaping applied will really safe you from all hassles. Lastly, rsyslog will wait until the shell command terminates. Thus, a program error in it (e.g. an infinite loop) can actually disable rsyslog. Even without that, during the programs run-time no messages are processed by rsyslog. As the IP stacks buffers are quickly overflowed, this bears an increased risk of message loss. You must be aware of these implications. Even though they are severe, there are several cases where the “shell execute” action is very useful. This is the reason why we have included it in its current form. To mitigate its risks, always a) test your program thoroughly, b) make sure its runtime is as short as possible (if it requires a longer run-time, you might want to spawn your own sub-shell asynchronously), c) apply proper firewalling so that only known senders can send syslog messages to rsyslog. Point c) is especially important: if rsyslog is accepting message from any hosts, chances are much higher that an attacker might try to exploit the “shell execute” action.</p>
+<h3 id="Template-Name"><a href="#Template-Name" class="headerlink" title="Template Name"></a>Template Name</h3><p>Every ACTION can be followed by a template name. If so, that template is used for message formatting. If no name is given, a hard-coded default template is used for the action. There can only be one template name for each given action. The default template is specific to each action. For a description of what a template is and what you can do with it, see the <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/templates.html">template</a> documentation.</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/4411ca20/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/bell.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seaky's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/posts/4411ca20/" itemprop="url">rsyslog学习8 -- RainerScript</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-28T17:54:40+08:00">
+                2021-09-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/4411ca20/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/posts/4411ca20/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  17
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="RainerScript"><a href="#RainerScript" class="headerlink" title="RainerScript"></a>RainerScript</h1><p>RainerScript是一种处理网络事件、配置、过程的脚本语言，是rsyslog的主要配置语言。不能简写成rscript，因为已经被注册了。</p>
+<p>v6后支持。</p>
+<h1 id="Data-Types-数据类型"><a href="#Data-Types-数据类型" class="headerlink" title="Data Types 数据类型"></a>Data Types 数据类型</h1><p>RainerScript是一种typeless语言，不需要关心数据类型。不能使用 “A” + “B” ，可以使用 &amp; 连接。有需要的话脚本会自动转换类型</p>
+<h1 id="Expressions-表达式"><a href="#Expressions-表达式" class="headerlink" title="Expressions 表达式"></a>Expressions 表达式</h1><p>支持任意复杂表达式。下面按优先级列出各表达式</p>
+<ul>
+<li>expressions in parenthesis</li>
+<li>not, unary minus</li>
+<li>*, /, % (modulus, as in C)</li>
+<li>+, -, &amp; (string concatenation)</li>
+<li>==, !=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=, contains (strings!), startswith (strings!)</li>
+<li>and</li>
+<li>or</li>
+</ul>
+<p>比如，“not a == b” 的返回很有可能不是你想要的，因为脚本处理器会运算“not a”等到一个布尔值再与b比较，而你可能想要的是 “not (a == b)”。</p>
+<p>如果要使用不等于，建议使用 “!=” or “&lt;&gt;”，两者是一样的。“not” 一般用在需要使用布尔值的场合。</p>
+<h1 id="Functions-函数"><a href="#Functions-函数" class="headerlink" title="Functions 函数"></a>Functions 函数</h1><p>有两种函数，build-ins和modules。Built-in可以随时被调用 ，而modules需要事先被载入。</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">module</span><span class="params">(load=<span class="string">&quot;&lt;name of module&gt;&quot;</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>如果有多于一个的函数使用了相同的名字，第一个载入的有效，同时，会产生一个错误消息，但不会中止。build-in函数总是预先被载入，所以会占据这些名字。</p>
+<ul>
+<li>Built-in Functions<ul>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-ipv4convert.html">ipv42num()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-ipv4convert.html">num2ipv4()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-trim.html">ltrim()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-trim.html">rtrim()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-cnum.html">cnum()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-cstr.html">cstr()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-dyn_inc.html">dyn_inc()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-exec_template.html">exec_template()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-exists.html">exists()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-field.html">field()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-format_time.html">format_time()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-get_property.html">get_property()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-getenv.html">getenv()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-int2hex.html">int2hex()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-is_time.html">is_time()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-lookup.html">lookup()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-parse_json.html">parse_json()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-parse_time.html">parse_time()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-previous_action_suspended.html">previous_action_suspended()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-prifilt.html">prifilt()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-random.html">random()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-re_extract.html">re_extract()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-re_extract_i.html">re_extract_i()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-re_match.html">re_match()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-re_match_i.html">re_match_i()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-replace.html">replace()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-script_error.html">script_error()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-strlen.html">strlen()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-substring.html">substring()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-tolower.html">tolower()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-wrap.html">wrap()</a></li>
+</ul>
+</li>
+<li>Module Functions<ul>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/mo-hashXX.html">HashXX</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/mo-hashXXmod.html">HashXXmod</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/mo-http_request.html">HTTP-Request</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/mo-unflatten.html">Unflatten</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="Control-Structures-控制结构"><a href="#Control-Structures-控制结构" class="headerlink" title="Control Structures 控制结构"></a>Control Structures 控制结构</h1><h2 id="if"><a href="#if" class="headerlink" title="if"></a>if</h2><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable">$msg</span> contains <span class="string">&quot;important&quot;</span>) then &#123;</span><br><span class="line">   <span class="keyword">if</span> ( <span class="variable">$</span>.foo != <span class="string">&quot;&quot;</span> ) then <span class="built_in">set</span> <span class="variable">$</span>.foo = <span class="variable">$</span>.bar &amp; <span class="variable">$</span>.baz;</span><br><span class="line">   action(<span class="built_in">type</span>=<span class="string">&quot;omfile&quot;</span> file=<span class="string">&quot;/var/log/important.log&quot;</span> template=<span class="string">&quot;outfmt&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="if-else-if-else"><a href="#if-else-if-else" class="headerlink" title="if/else-if/else"></a>if/else-if/else</h2><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable">$msg</span> contains <span class="string">&quot;important&quot;</span>) then &#123;</span><br><span class="line">   <span class="builtin-name">set</span> $.foo = $.bar &amp; $.baz;</span><br><span class="line">   action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/important.log&quot;</span> <span class="attribute">template</span>=<span class="string">&quot;outfmt&quot;</span>)</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="variable">$msg</span> startswith <span class="string">&quot;slow-query:&quot;</span>) then &#123;</span><br><span class="line">   action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/slow_log.log&quot;</span> <span class="attribute">template</span>=<span class="string">&quot;outfmt&quot;</span>)</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">   <span class="builtin-name">set</span> $.foo = $.quux;</span><br><span class="line">   action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/general.log&quot;</span> <span class="attribute">template</span>=<span class="string">&quot;outfmt&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="foreach"><a href="#foreach" class="headerlink" title="foreach"></a>foreach</h2><p>要说明的是，一般对于foreach会存在误解，这个只能工作于json结构，事实上，我们当时应该拒绝 foreach的，只是太迟了。</p>
+<p>要记住，在这种脚本语言中，没有array的概念，因为我们不想把事情搞得太复杂。只能在一些配置对象和一组选择比较时使用。</p>
+<p>如果你在解析json，foreach可以迭代json array和json objects。array是有序的，object是kay-value，无序。</p>
+<p>For the foreach invocation below:</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span> (<span class="variable">$</span>.i <span class="keyword">in</span> <span class="variable">$</span>.collection) <span class="keyword">do</span> &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Say <code>$.collection</code> holds an array <code>[1, &quot;2&quot;, &#123;&quot;a&quot;: &quot;b&quot;&#125;, 4]</code>, value of <code>$.i</code> across invocations would be <code>1</code>, <code>&quot;2&quot;</code>, <code>&#123;&quot;a&quot; : &quot;b&quot;&#125;</code> and <code>4</code>.</p>
+<p><code>$.collection</code> 必须来源于 JSON (via mmjsonparse).</p>
+<p>When <code>$.collection</code> holds an object <code>&#123;&quot;a&quot;: &quot;b&quot;, &quot;c&quot; : [1, 2, 3], &quot;d&quot; : &#123;&quot;foo&quot;: &quot;bar&quot;&#125;&#125;</code>, value of <code>$.i</code> across invocations would be <code>&#123;&quot;key&quot; : &quot;a&quot;, &quot;value&quot; : &quot;b&quot;&#125;</code>, <code>&#123;&quot;key&quot; : &quot;c&quot;, &quot;value&quot; : [1, 2, 3]&#125;</code> and <code>&#123;&quot;key&quot; : &quot;d&quot;, &quot;value&quot; : &#123;&quot;foo&quot; : &quot;bar&quot;&#125;&#125;</code> (not necessarily in the that order). In this case key and value will need to be accessed as <strong><code>$.i!key</code> and <code>$.i!value</code></strong> respectively.</p>
+<p>Here is an example of a nested foreach statement:</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span> (<span class="variable">$</span>.quux <span class="keyword">in</span> <span class="variable">$</span>!foo) <span class="keyword">do</span> &#123;</span><br><span class="line">   action(<span class="built_in">type</span>=<span class="string">&quot;omfile&quot;</span> file=<span class="string">&quot;./rsyslog.out.log&quot;</span> template=<span class="string">&quot;quux&quot;</span>)</span><br><span class="line">   <span class="keyword">foreach</span> (<span class="variable">$</span>.corge <span class="keyword">in</span> <span class="variable">$</span>.quux!bar) <span class="keyword">do</span> &#123;</span><br><span class="line">      reset <span class="variable">$</span>.grault = <span class="variable">$</span>.corge;</span><br><span class="line">      action(<span class="built_in">type</span>=<span class="string">&quot;omfile&quot;</span> file=<span class="string">&quot;./rsyslog.out.log&quot;</span> template=<span class="string">&quot;grault&quot;</span>)</span><br><span class="line">      <span class="keyword">if</span> (<span class="variable">$</span>.garply != <span class="string">&quot;&quot;</span>) then</span><br><span class="line">          <span class="built_in">set</span> <span class="variable">$</span>.garply = <span class="variable">$</span>.garply &amp; <span class="string">&quot;, &quot;</span>;</span><br><span class="line">      reset <span class="variable">$</span>.garply = <span class="variable">$</span>.garply &amp; <span class="variable">$</span>.grault!baz;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Again, the itereted items must have been created by parsing JSON.</p>
+<p>Please note that asynchronous-action calls in foreach-statement body should almost always set <code>action.copyMsg</code> to <code>on</code>. This is because action calls within foreach usually want to work with the variable loop populates (in the above example, <code>$.quux</code> and <code>$.corge</code>) which causes message-mutation and async-action must see message as it was in a certain invocation of loop-body, so they must make a copy to keep it safe from further modification as iteration continues. For instance, an async-action invocation with linked-list based queue would look like:</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span> ($.quux <span class="keyword">in</span> $!foo) <span class="keyword">do</span> &#123;</span><br><span class="line">    action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;./rsyslog.out.log&quot;</span> <span class="attribute">template</span>=<span class="string">&quot;quux</span></span><br><span class="line"><span class="string">           queue.type=&quot;</span>linkedlist&quot; action.<span class="attribute">copyMsg</span>=<span class="string">&quot;on&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这种代码是无效的，因为不是从json创建的对象</span></span><br><span class="line"><span class="built_in">set</span> <span class="variable">$</span>.noarr = [<span class="string">&quot;192.168.1.1&quot;</span>, <span class="string">&quot;192.168.2.&quot;</span>];</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$</span>.elt <span class="keyword">in</span> <span class="variable">$</span>.noarr) <span class="keyword">do</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="call"><a href="#call" class="headerlink" title="call"></a>call</h2><p>Details here: <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/rainerscript_call.html">The rsyslog “call” statement</a></p>
+<h2 id="continue"><a href="#continue" class="headerlink" title="continue"></a>continue</h2><p>A NOP, useful e.g. inside the <code>then</code> part of an if-structure.</p>
+<h1 id="configuration-objects-配置对象"><a href="#configuration-objects-配置对象" class="headerlink" title="configuration objects 配置对象"></a>configuration objects 配置对象</h1><h2 id="Common-Parameters"><a href="#Common-Parameters" class="headerlink" title="Common Parameters"></a>Common Parameters</h2><h3 id="config-enabled"><a href="#config-enabled" class="headerlink" title="config.enabled"></a>config.enabled</h3><p><em>New in version 8.33.0.</em></p>
+<p>所有的配置对象都有 config.enabled 参数 ，用来禁用它们。如果设置为on或留空，配置会被启用，如果是其它值，值忽略。这个可以从环境变量或文件中，利用反引号`来调整。</p>
+<p>比如，将环境变量LOAD_MPTCP设为off，然后构建</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">module(<span class="attribute">load</span>=<span class="string">&quot;imptcp&quot;</span></span><br><span class="line">     config.<span class="attribute">enabled</span>=`echo <span class="variable">$LOAD_IMPTCP</span>`)</span><br></pre></td></tr></table></figure>
+
+<p>该模块不会被载入</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">module(<span class="attribute">load</span>=<span class="string">&quot;imptcp&quot;</span></span><br><span class="line">     config.<span class="attribute">enabled</span>=`echo <span class="variable">$LOAD_IMPTCP</span>`)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">module(<span class="attribute">load</span>=<span class="string">&quot;imptcp&quot;</span></span><br><span class="line">     config.<span class="attribute">enabled</span>=`echo <span class="variable">$LOAD_IMPTCP</span>`)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Objects"><a href="#Objects" class="headerlink" title="Objects"></a>Objects</h2><h3 id="action"><a href="#action" class="headerlink" title="action()"></a>action()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/actions.html">action</a> object is the primary means of describing actions to be carried out.</p>
+<h3 id="global"><a href="#global" class="headerlink" title="global()"></a>global()</h3><p>This is used to set global configuration parameters. For details, please see the <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/global.html">rsyslog global configuration object</a>.</p>
+<h3 id="input"><a href="#input" class="headerlink" title="input()"></a>input()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/input.html">input</a> object is the primary means of describing inputs, which are used to gather messages for rsyslog processing.</p>
+<h3 id="module"><a href="#module" class="headerlink" title="module()"></a>module()</h3><p>The module object is used to load plugins.</p>
+<h3 id="parser"><a href="#parser" class="headerlink" title="parser()"></a>parser()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/parser.html">parser</a> object is used to define custom parser objects.</p>
+<h3 id="timezone"><a href="#timezone" class="headerlink" title="timezone()"></a>timezone()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/timezone.html">timezone</a> object is used to define timezone settings.</p>
+<h3 id="include"><a href="#include" class="headerlink" title="include()"></a>include()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/include.html">include</a> object is use to include configuration snippets stored elsewhere into the configuration.</p>
+<h1 id="String-Constants-字串常量"><a href="#String-Constants-字串常量" class="headerlink" title="String Constants 字串常量"></a>String Constants 字串常量</h1><p>字串常量是所有的脚本语言所必须，提供了程序开始时的一些值。</p>
+<h2 id="Uses"><a href="#Uses" class="headerlink" title="Uses"></a>Uses</h2><p>比较，配置参数，函数参数等地方都要用到。</p>
+<p>在字串常量中，特殊字符需要用反斜杠去注明。想要知道如何去正确的escape，使用工具 <a target="_blank" rel="noopener" href="http://www.rsyslog.com/rainerscript-constant-string-escaper/">RainerScript String Escape Online Tool</a>.</p>
+<h2 id="Types"><a href="#Types" class="headerlink" title="Types"></a>Types</h2><p>Rsyslog 提供了多种字串常量，与shell类似:</p>
+<ul>
+<li><p>单引号</p>
+<p>可以被escape</p>
+</li>
+<li><p>双引号</p>
+<p>在单引号的基础上，对$进行escape，如果无法被escape，将会产生一个语法错误，导致启动失败</p>
+</li>
+<li><p>反引号</p>
+<p>This was added in 8.33.0. 与shell中类似，only the following is supported:</p>
+<ul>
+<li><p>echo $VARNAME - It will evaluate the environment variable and use it as string constant. If the variable is not found, an empty string is generated (this is <strong>not</strong> an error).</p>
+<p>从8.37开始，echo被加强了，支持环境变量和字串常量混合</p>
+<p>An example:</p>
+<ul>
+<li>env SOMEPATH is set to “/var/log/custompath”</li>
+<li>config is: param=echo $SOMEPATH/myfile</li>
+<li>param than is expanded to “/var/log/custompath/myfile”</li>
+</ul>
+<p>不支持${VAR}，一个环境变量只能被whitespace 或 / 终结。此功能的目的并不是会了模仿bash，而是为了使用自定义外界的参数 </p>
+</li>
+<li><p>cat filename - It will evaluate to the content of the given file. 只支持读取一个文件名。如果无法读取，返回空值。</p>
+</li>
+</ul>
+<p>echo和cat后只能跟一个空格</p>
+<p>Backticks are especially useful for configuration files that are auto-generated but need to contain a small set of special functionality.</p>
+<p>更多例子参考  <a target="_blank" rel="noopener" href="https://github.com/rsyslog/rsyslog-docker/tree/master/appliance/alpine">https://github.com/rsyslog/rsyslog-docker/tree/master/appliance/alpine</a>.</p>
+</li>
+</ul>
+<h1 id="Variable-Property-types-变量类型"><a href="#Variable-Property-types-变量类型" class="headerlink" title="Variable (Property) types 变量类型"></a>Variable (Property) types 变量类型</h1><p>所有的属性都能被RainerScript所调用，用$表示</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">set</span> <span class="variable">$</span>.x!host = <span class="variable">$hostname</span>;</span><br></pre></td></tr></table></figure>
+
+<p>也支持本地变量，只作用于当前消息，但并不是消息属性。（e.g. the “$!” all JSON property does not contain them）</p>
+<p>只有 消息的json(CEE/Lumberjack) 属性可以被  <strong>set</strong>, <strong>unset</strong> and <strong>reset</strong> 修改, 本地变量也可以。</p>
+<p>消息的 JSON 属性命名以  “$!” 打头，where the bang character represents the root.</p>
+<p>本地变量以 “$.” 打头, whJSere the dot denotes the root.</p>
+<p>JSON 属性和本地变量都支持任意长度的深度，! 常用来作为路径分割，无论是消息属性还是本地变量。比如 “$!path1!path2!varname” 和 “$.path1!path2!varname” 都是用!分割的，但$后的!和.区分是消息属性还是本地变量。</p>
+<p>表达式最后要加上”;”，否则语法错误</p>
+<p>参考以下例子</p>
+<h2 id="set"><a href="#set" class="headerlink" title="set"></a><strong>set</strong></h2><p>sets the value of a local-variable or json property, 如果要定义的变量已经存在内容，将会有以下几种行为方式:</p>
+<p><strong>merges</strong> 如果新值为object, 但新的值会附加到root而不是指定的key下，比如</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> $.x!one <span class="comment">=</span> <span class="comment">&quot;val_1&quot;</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125;</span><br><span class="line"><span class="keyword">set</span> $.y!two <span class="comment">=</span> <span class="comment">&quot;val_2&quot;</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span> $.z!var <span class="comment">= $.x</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span> $.z!var <span class="comment">= $.y</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125;, <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;</span><br><span class="line"># note that the key *two* is at root level <span class="keyword">and</span> <span class="keyword">not</span>  under *<span class="symbol">$</span>.z!var*.</span><br></pre></td></tr></table></figure>
+
+<p><strong>ignores</strong> 如果原内容是object，而新值为string或num等非object. Eg:</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> $.x!one <span class="comment">=</span> <span class="comment">&quot;val_1&quot;</span>;</span><br><span class="line"><span class="keyword">set</span> $.x <span class="comment">=</span> <span class="comment">&quot;quux&quot;</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125;</span><br><span class="line"># note that <span class="string">&quot;quux&quot;</span> was ignored</span><br></pre></td></tr></table></figure>
+
+<p><strong>resets</strong> 如果旧值为非object.</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> $.x!val <span class="comment">=</span> <span class="comment">&quot;val_1&quot;</span>;</span><br><span class="line"><span class="keyword">set</span> $.x!val <span class="comment">=</span> <span class="comment">&quot;quux&quot;</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;val&quot;</span>: <span class="string">&quot;quux&quot;</span> &#125; &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="unset"><a href="#unset" class="headerlink" title="unset"></a><strong>unset</strong></h2><p>removes the key. Eg:</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> $.x!val <span class="comment">=</span> <span class="comment">&quot;val_1&quot;</span>;</span><br><span class="line">unset <span class="symbol">$</span>.x!val;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; &#125; &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="reset"><a href="#reset" class="headerlink" title="reset"></a><strong>reset</strong></h2><p>force sets the new value regardless of what the variable originally contained or if it was even set. Eg.</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># to contrast with the <span class="keyword">set</span> example above, here is how results would look with reset</span><br><span class="line"><span class="keyword">set</span> $.x!<span class="keyword">one</span> = <span class="string">&quot;val_1&quot;</span>;</span><br><span class="line"><span class="keyword">set</span> $.y!<span class="keyword">two</span> = <span class="string">&quot;val_2&quot;</span>;</span><br><span class="line"><span class="keyword">set</span> $.z!<span class="keyword">var</span> = $.x;</span><br><span class="line"># results <span class="keyword">in</span> $. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125; &#125;</span><br><span class="line"># &#x27;<span class="keyword">set</span>&#x27; or &#x27;reset&#x27; can be used interchangeably above(3 lines), they both have the same behaviour, <span class="keyword">as</span> variable doesn&#x27;t have <span class="keyword">an</span> existing value</span><br><span class="line"></span><br><span class="line">reset $.z!<span class="keyword">var</span> = $.y;</span><br><span class="line"># results <span class="keyword">in</span> $. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125; &#125; &#125;</span><br><span class="line"># <span class="keyword">note</span> how the value of $.z!<span class="keyword">var</span> was replaced</span><br><span class="line"></span><br><span class="line">reset $.x = <span class="string">&quot;quux&quot;</span>;</span><br><span class="line"># results <span class="keyword">in</span> $. = &#123; <span class="string">&quot;x&quot;</span>: <span class="string">&quot;quux&quot;</span>, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125; &#125; &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="Lookup-Tables-查找表"><a href="#Lookup-Tables-查找表" class="headerlink" title="Lookup Tables 查找表"></a>Lookup Tables 查找表</h1><p><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/lookup_tables.html">Lookup tables</a> are a powerful construct to obtain “class” information based on message content (e.g. to build log file names for different server types, departments or remote offices).</p>
+<h1 id="General-Queue-Parameters-通用队列参数"><a href="#General-Queue-Parameters-通用队列参数" class="headerlink" title="General Queue Parameters 通用队列参数"></a>General Queue Parameters 通用队列参数</h1><h2 id="Usage"><a href="#Usage" class="headerlink" title="Usage"></a>Usage</h2><p>Queue parameters can be used together with the following statements:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/actions.html">action()</a></li>
+<li>ruleset()</li>
+<li>main_queue()</li>
+</ul>
+<p>Queues need to be configured in the action or ruleset it should affect. If nothing is configured, default values will be used. Thus, the default ruleset has only the default main queue. Specific Action queues are not set up by default.</p>
+<p>To fully understand queue parameters and how they interact, be sure to read the <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/concepts/queues.html">queues</a> documentation.</p>
+<p>参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/queue_parameters.html">https://www.rsyslog.com/doc/master/rainerscript/queue_parameters.html</a></p>
+<h2 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h2><h3 id="Example-1"><a href="#Example-1" class="headerlink" title="Example 1"></a>Example 1</h3><p>The following is a sample of a TCP forwarding action with its own queue.</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;192.168.2.11&quot;</span> <span class="attribute">port</span>=<span class="string">&quot;10514&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;tcp&quot;</span></span><br><span class="line">       queue.<span class="attribute">filename</span>=<span class="string">&quot;forwarding&quot;</span> queue.<span class="attribute">size</span>=<span class="string">&quot;1000000&quot;</span> queue.<span class="attribute">type</span>=<span class="string">&quot;LinkedList&quot;</span></span><br><span class="line">      )</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="The-rsyslog-“call”-statement"><a href="#The-rsyslog-“call”-statement" class="headerlink" title="The rsyslog “call” statement"></a>The rsyslog “call” statement</h1><p>Call与ruleset联系，可以把rulesets看成是一个子程序，就容易理解call了。</p>
+<p>Call可以调用任何rulsests，如果在ruleset中存在queue，由消息发送给queue异步处理，否则会同步执行，结束后返回控制</p>
+<p>在注意同步和异步的区别</p>
+<p>Call是用来取代已经废弃的 omruleset模块，使用了新引擎，更有效率，特别是对于那些同步操作，几乎是0开销。而omrulset需要复制消息，这至少要消耗250字节的内存和一些计算性能</p>
+<h2 id="syntax"><a href="#syntax" class="headerlink" title="syntax"></a>syntax</h2><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">call</span> rulesetname</span><br></pre></td></tr></table></figure>
+
+<p>Where “rulesetname” is the name of a ruleset that is defined elsewhere inside the configuration. If the call is synchronous or asynchronous depends on the ruleset parameters. This cannot be overridden by the “call” statement.</p>
+<h2 id="related-links"><a href="#related-links" class="headerlink" title="related links"></a>related links</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://rainer.gerhards.net/2012/10/how-to-use-rsyslogs-ruleset-and-call.html">Blog posting announcing “call” statement (with sample)</a></li>
+</ul>
+<h1 id="The-rsyslog-“call-indirect”-statement"><a href="#The-rsyslog-“call-indirect”-statement" class="headerlink" title="The rsyslog “call_indirect” statement"></a>The rsyslog “call_indirect” statement</h1><p>The rsyslog “call_indirect” 类亿于 “call”，区别在于被call的ruleset不是常量，还是一个实时计算的表达式</p>
+<p>如果ruleset不存在，会产生一个错误消息，然后被跳过，继续执行下一语句</p>
+<h2 id="syntax-1"><a href="#syntax-1" class="headerlink" title="syntax"></a>syntax</h2><figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call_indirect expression<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+
+<p>Where “expression” is any valid expression. See <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/expressions.html">expressions</a> for more information. </p>
+<p>结尾要有分号</p>
+<h2 id="examples"><a href="#examples" class="headerlink" title="examples"></a>examples</h2><p> “call_indirect” 可以根据消息变量来调用ruleset，例如，rulesets以syslog tag命名，就可以这么写</p>
+<figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call_indirect <span class="symbol">$syslogtag</span>;</span><br></pre></td></tr></table></figure>
+
+<p>使用时要小心被注入，最好在ruleset前加上前缀，比如  “changeme-” :</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call_indirect <span class="string">&quot;changeme-&quot;</span> <span class="meta">&amp; $syslogtag;</span></span><br></pre></td></tr></table></figure>
+
+<p>call_indirect也可以调用常量名，比如</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call_indirect <span class="string">&quot;my_ruleset&quot;</span><span class="comment">;</span></span><br></pre></td></tr></table></figure>
+
+<p>不过常量名的调用最好还是用call，效率会高很多。</p>
+<h2 id="additional-information"><a href="#additional-information" class="headerlink" title="additional information"></a>additional information</h2><p>We need to have two different statements, “call” and “call_indirect” because “call” already existed at the time “call_indirect” was added. We could not extend “call” to support expressions, as that would have broken existing configs. In that case <code>call ruleset</code> would have become invalid and <code>call &quot;ruleset&quot;</code> would have to be used instead. Thus we decided to add the additional “call_indirect” statement for this use case.</p>
+<h1 id="global-configuration-object"><a href="#global-configuration-object" class="headerlink" title="global() configuration object"></a>global() configuration object</h1><p>允许设置全局变量，但每个变量只能设置一次，之后不能被reset。</p>
+<p>参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/global.html">https://www.rsyslog.com/doc/master/rainerscript/global.html</a></p>
+<h1 id="The-rsyslog-include-object"><a href="#The-rsyslog-include-object" class="headerlink" title="The rsyslog include() object"></a>The rsyslog include() object</h1><p>include() 可以调用 配置片断，<em>New in version 8.33.0.</em></p>
+<h2 id="How-it-Works"><a href="#How-it-Works" class="headerlink" title="How it Works"></a>How it Works</h2><p>如果不熟悉include，可以认为是一种复制粘贴。rsyslog到到要include的对象，复制内容到指定位置，然后删除include文句</p>
+<p>include时要注意位置，不同的位置可能会影响执行结果。</p>
+<h2 id="Parameters"><a href="#Parameters" class="headerlink" title="Parameters"></a>Parameters</h2><p>参数名大小写不敏感，每个include中file和text只能选其一</p>
+<h3 id="file"><a href="#file" class="headerlink" title="file"></a>file</h3><p>Name of file to be included. May include wildcards, in which case all matching files are included (in order of file name sort order).</p>
+<h3 id="text"><a href="#text" class="headerlink" title="text"></a>text</h3><p>Text to be included. This is most useful when using backtick string constants.</p>
+<h3 id="mode"><a href="#mode" class="headerlink" title="mode"></a>mode</h3><p>Affects how missing files are to be handled:</p>
+<ul>
+<li><code>abort-if-missing</code>, with rsyslog aborting when the file is not present</li>
+<li><code>required</code> <em>(default)</em>, with rsyslog emitting an error message but otherwise continuing when the file is not present</li>
+<li><code>optional</code>, which means non-present files will be skipped without notice</li>
+</ul>
+<h2 id="Examples-1"><a href="#Examples-1" class="headerlink" title="Examples"></a>Examples</h2><h3 id="Include-a-required-file"><a href="#Include-a-required-file" class="headerlink" title="Include a required file"></a>Include a required file</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">include</span><span class="params">(file=<span class="string">&quot;/path/to/include.conf&quot;</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>Note</p>
+<p>Unless otherwise specified, files referenced by an <code>include()</code> object must be present, otherwise an error will be generated.</p>
+<h3 id="Include-an-optional-file"><a href="#Include-an-optional-file" class="headerlink" title="Include an optional file"></a>Include an optional file</h3><p>The referenced file will be used if found, otherwise no errors or warnings will be generated regarding its absence.</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span>(</span><br><span class="line">   <span class="keyword">file</span>=<span class="string">&quot;/path/to/include.conf&quot;</span></span><br><span class="line">   mode=<span class="string">&quot;optional&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Include-multiple-files"><a href="#Include-multiple-files" class="headerlink" title="Include multiple files"></a>Include multiple files</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">include</span><span class="params">(file=<span class="string">&quot;/etc/rsyslog.d/*.conf&quot;</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>Note</p>
+<p>Unless otherwise specified, files referenced by an <code>include()</code> object must be present, otherwise an error will be generated.</p>
+<h3 id="Include-an-environment-variable-as-configuration"><a href="#Include-an-environment-variable-as-configuration" class="headerlink" title="Include an environment variable as configuration"></a>Include an environment variable as configuration</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">include</span><span class="params">(text=`echo <span class="variable">$ENV_VAR</span>`)</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Include-a-file-specified-via-an-environment-variable"><a href="#Include-a-file-specified-via-an-environment-variable" class="headerlink" title="Include a file specified via an environment variable"></a>Include a file specified via an environment variable</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">include</span><span class="params">(file=`echo <span class="variable">$ENV_VAR</span>`)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>Note</p>
+<p>Unless otherwise specified, files referenced by an <code>include()</code> object must be present, otherwise an error will be generated.</p>
+<h3 id="Include-an-optional-file-specified-via-an-environment-variable"><a href="#Include-an-optional-file-specified-via-an-environment-variable" class="headerlink" title="Include an optional file specified via an environment variable"></a>Include an optional file specified via an environment variable</h3><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">include(</span><br><span class="line">   <span class="attribute">file</span>=`echo <span class="variable">$ENV_VAR</span>`</span><br><span class="line">   <span class="attribute">mode</span>=<span class="string">&quot;optional&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/b3bbd24d/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/bell.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seaky's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/posts/b3bbd24d/" itemprop="url">rsyslog学习7 -- Filter Conditions</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-28T16:14:20+08:00">
+                2021-09-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/b3bbd24d/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/posts/b3bbd24d/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  979
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  4
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Filter-Conditions"><a href="#Filter-Conditions" class="headerlink" title="Filter Conditions"></a>Filter Conditions</h1><p>rsyslog支持以下条件</p>
+<ul>
+<li>传统的severity和facility</li>
+<li>Property-Based Filters 基于属性</li>
+<li>基于表达式</li>
+<li>BSD-style blocks（不再向后兼容）</li>
+</ul>
+<h2 id="Selectors"><a href="#Selectors" class="headerlink" title="Selectors"></a>Selectors</h2><p><strong>Selectors 是传统的筛选方式.</strong> 简洁，高效，特别是在v7中，比advanced模式高效，目前的版本中两者已经没有差别。</p>
+<p>Selector 由 facility和priority组成，由”.”分割，大小写敏感，可以写成十进制数字，但最好不这么做。个体可以参考syslog(3). 这些名字在文件/usr/include/syslog.h 定义，类似  LOG_-values </p>
+<p>facility 关键字: auth, authpriv, cron, daemon, kern, lpr, mail, mark, news, security (same as auth), syslog, user, uucp and local0 through local7。 security 不应被再被app使用。</p>
+<p>Priority : debug, info, notice, warning, warn (same as warning), err, error (same as err), crit, alert, emerg, panic (same as emerg). The keywords error, warn and panic are deprecated and should not be used anymore. The priority defines the severity of the message.</p>
+<p>rsyslog和syslog行为类似，并有一些扩展，比如理解(“*’‘)和none，也可以使用”,”指定多个多个priority. 也可以指定多个facility，但要注意的时，如果是多个facility语句，priority将被忽略</p>
+<p>多个selectors可以(“;’‘)连接，后者覆盖前者，还可以使用(“=’‘)和(“!’‘)</p>
+<h2 id="Property-Based-Filters"><a href="#Property-Based-Filters" class="headerlink" title="Property-Based Filters"></a>Property-Based Filters</h2><p>rsyslogd特有。可以过滤任何属性。参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/properties.html">rsyslog properties documentation</a> </p>
+<p>property-based filter以”:”起始，后跟属性名字，然后是”,”，比较操作符，”,”，比较值（用双引号包围）。逗号之间可以有空格和tab。属性名和比较符大小写敏感。</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:<span class="keyword">property</span><span class="title"></span>, [!]compare-operation, <span class="string">&quot;value&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Compare-Operations"><a href="#Compare-Operations" class="headerlink" title="Compare-Operations"></a>Compare-Operations</h3><p><strong>contains</strong></p>
+<p>​    是否包含某值，精确匹配，不支持通配符</p>
+<p><strong>isequal</strong></p>
+<p>​    两者必须精确匹配，一般用于 syslogtag or FROMHOST</p>
+<p><strong>startswith</strong></p>
+<p>​    Checks if the value is found exactly at the beginning of the property value. For example, if you search for “val” with</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">:msg</span>, startswith, <span class="string">&quot;val&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>​    可匹配 “values are in this message” 但不匹配 “There are values in this message” (<em>“contains”</em> 可以). startswith远比regex高效</p>
+<p><strong>regex</strong></p>
+<p>​    Compares the property against the provided POSIX BRE regular expression.</p>
+<p><strong>ereregex</strong></p>
+<p>​    Compares the property against the provided POSIX ERE regular expression.</p>
+<p>可在比较操作之前使用(!)来反向操作。比如 “This is an informative message”</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 不匹配</span></span><br><span class="line">:msg, <span class="keyword">contains</span>, <span class="string">&quot;error&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 匹配</span></span><br><span class="line">:msg, !<span class="keyword">contains</span>, <span class="string">&quot;error&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Value-Part"><a href="#Value-Part" class="headerlink" title="Value Part"></a>Value Part</h3><p>vaule是一个引号间的字串，支持一些转义</p>
+<p>“ - the quote character (e.g. “String with “Quotes””)</p>
+<p>\ - the backslash character (e.g. “C:\tmp”)</p>
+<p>一般来说，主要是针对真实的 msg 做一些过滤</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 注意，大小写敏感，不会匹配“id-4711”</span></span><br><span class="line">:msg, <span class="keyword">contains</span>, <span class="string">&quot;ID-4711&quot;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># 匹配 fatal和<span class="meta-keyword">error</span>，中间任何字符。</span></span><br><span class="line">msg, regex, <span class="string">&quot;fatal .* error&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>使用属性过滤是一个挑战，可以使用debug来测试，rsyslogd -d</p>
+<p>不支持布尔操作，如果要过滤facility或severity，建议使用 selectors</p>
+<h2 id="Expression-Based-Filters"><a href="#Expression-Based-Filters" class="headerlink" title="Expression-Based Filters"></a>Expression-Based Filters</h2><p>可以过滤任意复杂的表达式，包括布尔，算术和字串操作，类似于完整的脚本语言，不过在语法有些许区别。</p>
+<p>表达式过滤以关键字 if 开始，类似于</p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">expr</span> then action-part-of-selector-<span class="keyword">line</span></span><br></pre></td></tr></table></figure>
+
+<p>if 和 then是关键字，必有存在，expr是表达式，参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/expressions.html">expression documentation</a> ，action-part-of-selector-line是action</p>
+<h2 id="BSD-style-Blocks"><a href="#BSD-style-Blocks" class="headerlink" title="BSD-style Blocks"></a>BSD-style Blocks</h2><p>v7+不再支持，所以不建议再使用</p>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">*.* <span class="regexp">/var/</span>log/file1 <span class="comment"># 传统方式</span></span><br><span class="line"><span class="keyword">if</span> <span class="variable">$msg</span> contains <span class="string">&#x27;error&#x27;</span> then <span class="regexp">/var/</span>log/errlog <span class="comment"># 基于表达式的方式</span></span><br></pre></td></tr></table></figure>
+
+<p>Right now, you need to specify numerical values if you would like to check for facilities and severity. These can be found in <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc5424.html"><strong>RFC 5424</strong></a>. If you don’t like that, you can of course also use the textual property - just be sure to use the right one. As expression support is enhanced, this will change. For example, if you would like to filter on message that have facility local0, start with “DEVNAME” and have either “error1” or “error0” in their message content, you could use the following filter:</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 必须在一行</span></span><br><span class="line"><span class="keyword">if</span> <span class="variable">$syslogfacility</span>-text == <span class="string">&#x27;local0&#x27;</span> and <span class="variable">$msg</span> startswith <span class="string">&#x27;DEVNAME&#x27;</span> and (<span class="variable">$msg</span> contains <span class="string">&#x27;error1&#x27;</span> or <span class="variable">$msg</span> contains <span class="string">&#x27;error0&#x27;</span>) then <span class="regexp">/var/</span>log/somelog</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果要保存除了 error1 或 error0 的日志，只要加上 not</span></span><br><span class="line"><span class="keyword">if</span> <span class="variable">$syslogfacility</span>-text == <span class="string">&#x27;local0&#x27;</span> and <span class="variable">$msg</span> startswith <span class="string">&#x27;DEVNAME&#x27;</span> and not (<span class="variable">$msg</span> contains <span class="string">&#x27;error1&#x27;</span> or <span class="variable">$msg</span> contains <span class="string">&#x27;error0&#x27;</span>) then <span class="regexp">/var/</span>log/somelog</span><br></pre></td></tr></table></figure>
+
+<p>如果要忽略大小写的比较，使用 “contains_i” 代替 “contains” ，使用 “startswith_i” 代替 “startswith”. 注意，表达式过滤<strong>不支持</strong>正则表达式</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/26f3d7b2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/bell.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seaky's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/posts/26f3d7b2/" itemprop="url">rsyslog学习6 -- The Property Replacer</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-28T10:52:17+08:00">
+                2021-09-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/26f3d7b2/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/posts/26f3d7b2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1.9k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="The-Property-Replacer-属性替换"><a href="#The-Property-Replacer-属性替换" class="headerlink" title="The Property Replacer 属性替换"></a>The Property Replacer 属性替换</h1><p>The Property Replacer 是 rsyslogd的 字符模板的核心组件，用来操纵属性值</p>
+<h2 id="Accessing-Properties"><a href="#Accessing-Properties" class="headerlink" title="Accessing Properties"></a>Accessing Properties</h2><p>通过两个 % 读取属性，并被修改，语法如下</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%<span class="keyword">property</span><span class="title"></span>:fromChar:toChar:options%</span><br></pre></td></tr></table></figure>
+
+<h3 id="Available-Properties"><a href="#Available-Properties" class="headerlink" title="Available Properties"></a>Available Properties</h3><p>见 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/properties.html">rsyslog properties</a></p>
+<h3 id="Character-Positions"><a href="#Character-Positions" class="headerlink" title="Character Positions"></a>Character Positions</h3><p><strong>FromChar</strong> 和<strong>toChar</strong> 用来截字串，它们代表偏移量，从1开始计数。截取前两个字符语法为: “%msg:1:2%”. 如果只使用options，冒号还是需要的。比如 “%msg:::lowercase%”. 如果要截取从某位置到末尾，设置toChar为 (“$”)  (e.g. %msg:10:$%, which will extract from position 10 to the end of the string).</p>
+<p>支持正则表达式。设置FromChar为“R”，rsyslog就会知道使用正则面不是位置参数，表达式放在toChar上，必须以“–end” 结尾。rsyslog会返回匹配的部分。比如 “%msg:R:.*Sev:. (.*) [.*–end%”</p>
+<p>在 “R” 后还可以支持一些参数</p>
+<p>R,<regexp-type>,<submatch>,<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/nomatch.html"><nomatch></a>,<match-number></p>
+<p>regexp-type 可以使用 “BRE” for Posix basic regular expressions or “ERE” for extended ones. 必须要大写. 早期的版本只支持BRE。submatch指示器指示使用哪一个submatch结果，支持单数字。0表示整个匹配，1 to 9 为实际submatch. match-number 表示使用哪一个结果，从0开始。最多支持10个（数字是9）</p>
+<p><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/nomatch.html">nomatch</a> 指示如果没有匹配将使用的值</p>
+<p>这个例子使用ERE规则，从消息提取第一个子匹配，如果没有匹配，则使用整个字段</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%<span class="symbol">msg:</span>R,ERE,<span class="number">1</span>,<span class="symbol">FIELD:</span><span class="keyword">for</span> (vlan[0<span class="number">-9</span>]\*)<span class="symbol">:--end%</span></span><br></pre></td></tr></table></figure>
+
+<p>以下是从第二个匹配中，提取第一个子匹配</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%<span class="symbol">msg:</span>R,ERE,<span class="number">1</span>,FIELD,<span class="number">1</span><span class="symbol">:for</span> (vlan[0<span class="number">-9</span>]\*)<span class="symbol">:--end%</span></span><br></pre></td></tr></table></figure>
+
+<p>强烈建议使用 <a target="_blank" rel="noopener" href="http://www.rsyslog.com/tool-regex">rsyslog regular expression checker/generator</a> 工具。虽然不同版本有所不同，但基本覆盖了大部分情况。</p>
+<h4 id="关于nomatch-mode"><a href="#关于nomatch-mode" class="headerlink" title="关于nomatch mode"></a>关于<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/nomatch.html">nomatch mode</a></h4><p>如果没有匹配，以早期会返回“**NO MATCH**“，此模式为 DFLT</p>
+<p>现在增加了几个有用的模式。</p>
+<table>
+<thead>
+<tr>
+<th><strong>Mode</strong></th>
+<th><strong>Returned</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DFLT</td>
+<td>“<strong>NO MATCH</strong>”</td>
+</tr>
+<tr>
+<td>BLANK</td>
+<td>“” (empty string)</td>
+</tr>
+<tr>
+<td>ZERO</td>
+<td>“0”</td>
+</tr>
+<tr>
+<td>FIELD</td>
+<td>full content of original field</td>
+</tr>
+</tbody></table>
+<p>提取也可以基于<strong>fields</strong>，将FromChar设为F。Fields以定位符分割，默认是TAB（ASCII 9），也可以自定义，例如需要用”,”作为定位符，则写成 “F,44”，44是”,”的ASCII值。用定位符比正则高效，如果消息是规则的话。Field是从1开始，如果设为0，或高于实际数量，会导致”field not found”错误。toChar上设置需要的field数，比如”%msg:F:3%”，或者用”;”分割: %msg:F,59:3%”</p>
+<p>使用fields的不足是无法截取字串，从6.3.9开始，fromPos和toPos可以用来解决这个问题，但语法上有点丑。比如在上例中要截取第5到第9个字符，语法是“%msg:F,59,5:3,9%”</p>
+<p>F和R必须大写，语法不能有空格。</p>
+<p>每当有字段定位符出现，就会开启一个新的字段。可以在定位符后加上”+”，则多个定位符将视过一个。比如以下代码</p>
+<figure class="highlight excel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">int</span> <span class="built_in">n</span>, m;</span><br><span class="line">...</span><br><span class="line">syslog(LOG_ERR, <span class="string">&quot;%d test %6d&quot;</span>, <span class="built_in">n</span>, m);</span><br></pre></td></tr></table></figure>
+
+<p>有可能输出“1 test   2”, “1 test   23”, “1 test 234567”，空格数量不可知。可以使用以下语法</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;%msg:F,32:2%&quot;</span> <span class="keyword">to</span> <span class="string">&quot;%msg:F,32+:2%&quot;</span>.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Property-Options"><a href="#Property-Options" class="headerlink" title="Property Options"></a>Property Options</h3><p>大小写敏感</p>
+<ul>
+<li><p><strong>uppercase</strong></p>
+<p>convert property to uppercase only</p>
+</li>
+<li><p><strong>lowercase</strong></p>
+<p>convert property text to lowercase only</p>
+</li>
+<li><p><strong>fixed-width</strong></p>
+<p>当原始字串长度小于toChar时填充。This feature was introduced in rsyslog 8.13.0</p>
+</li>
+<li><p><strong>json</strong></p>
+<p>将value转会json可以被解析的格式，比如将ASCII LF转为“\n”，不能和csv同存</p>
+</li>
+<li><p><strong>jsonf</strong>[:outname]</p>
+<p>该属性将会被转为json，与json不同的是，json是去转化value，让其可以被json，而jsonf是将整个结果是源于 “fieldname”=”value” 这种格式。其中fieldname是参数指定，否则使用默认属性名。value可以被option操控，但field name不能，所以需要指定恰当的名字。参考 <a target="_blank" rel="noopener" href="https://rainer.gerhards.net/2012/04/rsyslog-templates-json.html">this article from Rainer’s blog</a> 提到</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># json的模板，比较丑陋，为了生成json，相当于字段的拼接</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$template</span> tpl, “&#123;“message”<span class="symbol">:</span>”%msg::<span class="symbol">:json%</span>”,”fromhost”<span class="symbol">:</span>”%HOSTNAME::<span class="symbol">:json%</span>”,”facility”<span class="symbol">:</span>”%syslogfacility-text%”,”priority”<span class="symbol">:</span>”%syslogpriority-text%”,”timereported”<span class="symbol">:</span>”%timereported::<span class="symbol">:date-rfc3339%</span>”,”timegenerated”<span class="symbol">:</span>”%timegenerated::<span class="symbol">:date-rfc3339%</span>”&#125;”</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jsonf的模板，直接是从 “fieldname”=”value” 生成json</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$template</span> tpl,”&#123;%msg::<span class="symbol">:jsonf</span><span class="symbol">:message%</span>,%HOSTNAME::<span class="symbol">:jsonf</span><span class="symbol">:fromhost%</span>,%syslogfacility-text::<span class="symbol">:jsonf</span><span class="symbol">:facility%</span>,%syslogpriority-text::<span class="symbol">:jsonf</span><span class="symbol">:priority%</span>,%timereported::<span class="symbol">:date-rfc3339</span>,jsonf%,%timegenerated::<span class="symbol">:date-rfc3339</span>,jsonf%&#125;”</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果不需要改变fieldname</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$template</span> tpl,”&#123;%msg::<span class="symbol">:json%</span>,%HOSTNAME::<span class="symbol">:jsonf%</span>,%syslogfacility-text::<span class="symbol">:jsonf%</span>,%syslogpriority-text::<span class="symbol">:jsonf%</span>,%timereported::<span class="symbol">:date-rfc3339</span>,jsonf%,%timegenerated::<span class="symbol">:date-rfc3339</span>,jsonf%&#125;”</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>csv</strong></p>
+<p>根据 <a target="_blank" rel="noopener" href="http://www.ietf.org/rfc/rfc4180.txt">RFC 4180</a> 生成csv格式。Rsyslog 总是使用双引号。 例如: $template csvline,”%syslogtag:::csv%,%msg:::csv%” ，你需要在模板中正常定义”,”的位置</p>
+</li>
+<li><p><strong>drop-last-lf</strong></p>
+<p>The last LF in the message (if any), is dropped. Especially useful for PIX.</p>
+</li>
+<li><p><strong>date-utc</strong></p>
+<p>convert data to UTC prior to outputting it (available since 8.18.0)</p>
+</li>
+<li><p><strong>date-mysql</strong></p>
+<p>format as mysql date</p>
+</li>
+<li><p><strong>date-rfc3164</strong></p>
+<p>format as RFC 3164 date，”Mmm dd hh:mm:ss”</p>
+</li>
+<li><p><strong>date-rfc3164-buggyday</strong></p>
+<p>与 date-rfc3164 相同, 在RFC 3164 如果日期为单数字，需要写入一个空格，在buggyday中，用0来代替。如果要转发消息，不建议使用这个option，有可能会被远端服务器认识是错误</p>
+</li>
+<li><p><strong>date-rfc3339</strong></p>
+<p>format as RFC 3339 date，”2013-09-12T22:50:20+08:00”</p>
+</li>
+<li><p><strong>date-unixtimestamp</strong></p>
+<p>Format as a unix timestamp (seconds since epoch)</p>
+</li>
+<li><p><strong>date-year</strong></p>
+<p>just the year part (4-digit) of a timestamp</p>
+</li>
+<li><p><strong>date-month</strong></p>
+<p>just the month part (2-digit) of a timestamp</p>
+</li>
+<li><p><strong>date-day</strong></p>
+<p>just the day part (2-digit) of a timestamp</p>
+</li>
+<li><p><strong>date-hour</strong></p>
+<p>just the hour part (2-digit, 24-hour clock) of a timestamp</p>
+</li>
+<li><p><strong>date-minute</strong></p>
+<p>just the minute part (2-digit) of a timestamp</p>
+</li>
+<li><p><strong>date-second</strong></p>
+<p>just the second part (2-digit) of a timestamp</p>
+</li>
+<li><p><strong>date-subseconds</strong></p>
+<p>just the subseconds of a timestamp (always 0 for a low precision timestamp)</p>
+</li>
+<li><p><strong>date-tzoffshour</strong></p>
+<p>just the timezone offset hour part (2-digit) of a timestamp</p>
+</li>
+<li><p><strong>date-tzoffsmin</strong></p>
+<p>just the timezone offset minute part (2-digit) of a timestamp. Note that this is usually 0, but there are some time zones that have offsets which are not hourly-granular. If so, this is the minute offset.</p>
+</li>
+<li><p><strong>date-tzoffsdirection</strong></p>
+<p>just the timezone offset direction part of a timestamp. This specifies if the offsets needs to be added (“+”) or subtracted (“-“) to the timestamp in order to get UTC.</p>
+</li>
+<li><p><strong>date-ordinal</strong></p>
+<p>returns the ordinal for the given day, e.g. it is 2 for January, 2nd</p>
+</li>
+<li><p><strong>date-week</strong></p>
+<p>returns the week number</p>
+</li>
+<li><p><strong>date-wday</strong></p>
+<p>just the weekday number of the timstamp. This is a single digit, with 0=Sunday, 1=Monday, …, 6=Saturday.</p>
+</li>
+<li><p><strong>date-wdayname</strong></p>
+<p>just the abbreviated english name of the weekday (e.g. “Mon”, “Sat”) of the timestamp.</p>
+</li>
+<li><p><strong>escape-cc</strong></p>
+<p>replace control characters (ASCII value 127 and values less then 32) with an escape sequence. The sequence is “#<charval>” where charval is the 3-digit decimal value of the control character. For example, a tabulator would be replaced by “#009”. Note: using this option requires that <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/rsconf1_escapecontrolcharactersonreceive.html">$EscapeControlCharactersOnReceive</a> is set to off.</p>
+</li>
+<li><p><strong>space-cc</strong></p>
+<p>replace control characters by spaces Note: using this option requires that <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/rsconf1_escapecontrolcharactersonreceive.html">$EscapeControlCharactersOnReceive</a> is set to off.</p>
+</li>
+<li><p><strong>drop-cc</strong></p>
+<p>drop control characters - the resulting string will neither contain control characters, escape sequences nor any other replacement character like space. Note: using this option requires that <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/rsconf1_escapecontrolcharactersonreceive.html">$EscapeControlCharactersOnReceive</a> is set to off.</p>
+</li>
+<li><p><strong>compressspace</strong></p>
+<p>compresses multiple spaces (US-ASCII SP character) inside the string to a single one. This compression happens at a very late stage in processing. Most importantly, it happens after substring extraction, so the <strong>FromChar</strong> and <strong>ToChar</strong> positions are <strong>NOT</strong> affected by this option. (available since v8.18.0)</p>
+</li>
+<li><p><strong>sp-if-no-1st-sp</strong></p>
+<p>这个option有点吓人，一般不应该被使用。当字串第一个字符为非空格时，返回空格，否则返回空值。这主要是用来解决RFC3164的问题。在3164中，没有对tag和message指定分割符，而通常是以空格代替，所以当空格是消息的一部分时，会带来问题。tag后立即是另一个非空格字符，会给解释器带来误解。</p>
+<p>看不懂这个解释也很正常，反正忘掉它就好 ;)</p>
+</li>
+<li><p><strong>secpath-drop</strong></p>
+<p>Drops slashes inside the field (e.g. “a/b” becomes “ab”). Useful for secure pathname generation (with dynafiles).</p>
+</li>
+<li><p><strong>secpath-replace</strong></p>
+<p>Replace slashes inside the field by an underscore. (e.g. “a/b” becomes “a_b”). Useful for secure pathname generation (with dynafiles).</p>
+</li>
+</ul>
+<p>要使用多个options，只要简单的用”,”连接它们，比如“escape-cc,sp-if-no-1st-sp”，如果选项有冲突，后者会覆盖前者，比如 “escape-cc,drop-cc” will use drop-cc and “drop-cc,escape-cc” will use escape-cc mode.</p>
+<h2 id="Further-Links"><a href="#Further-Links" class="headerlink" title="Further Links"></a>Further Links</h2><ul>
+<li><p>Article on “<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/tutorials/recording_pri.html">Recording the Priority of Syslog Messages</a>” (describes use of templates to record severity and facility of a message)</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/rsyslog_conf.html">Configuration file syntax</a>, this is where you actually use the property replacer.</p>
+</li>
+<li><p>Property Replacer nomatch mode</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/nomatch.html#summary-of-nomatch-modes">Summary of nomatch Modes</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/c366e6e/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/bell.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seaky's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/posts/c366e6e/" itemprop="url">rsyslog学习5 -- Properties</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-28T09:16:36+08:00">
+                2021-09-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/c366e6e/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/posts/c366e6e/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  7
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Properties"><a href="#Properties" class="headerlink" title="Properties"></a>Properties</h1><h1 id="Properties-属性"><a href="#Properties-属性" class="headerlink" title="Properties 属性"></a>Properties 属性</h1><p>rsyslog中的数据项称为Properties，有些来源于消息，有些来源于其它</p>
+<p>Properties被用于</p>
+<ul>
+<li>模板</li>
+<li>条件声明</li>
+</ul>
+<p>Properties是大小写敏感的</p>
+<p>Properties也有被称为variables，两者意义相同，区别可参考 <a target="_blank" rel="noopener" href="https://rainer.gerhards.net/2020/08/rsyslog-template-variables-where-to-find-them.html%22">rsyslog lead author Rainer Gerhards explains the naming difference</a> ，（最初properties是不可变的，但后来引入了可变的properties, 成了variable properties）</p>
+<h2 id="消息属性"><a href="#消息属性" class="headerlink" title="消息属性"></a>消息属性</h2><p>rsyslog会从原始消息中解析出许多属性，所有的消息属性以字母开始。</p>
+<p><strong>msg</strong></p>
+<p>the MSG part of the message (aka “the message” ;))</p>
+<p><strong>rawmsg</strong></p>
+<p>原始消息，一般用来debug或需要原封不动的转发时。需要注意的是 <em>EscapecontrolCharactersOnReceive</em> 默认被启用，这可能会导致转发的消息有所改变</p>
+<p><strong>rawmsg-after-pri</strong></p>
+<p>移除了PRI的rawmsg。如果本来就没有PRI，那rawmsg-after-pri就等同于rawmsg。PRI是syslog的消息头部中，包含了facility和severity的信息。由 &lt;&gt; 包围，比如&lt;191&gt;。这个字段通常不写入日志，但常用来进行消息分类。</p>
+<p><strong>hostname</strong></p>
+<p>hostname from the message</p>
+<p><strong>source</strong></p>
+<p>alias for HOSTNAME</p>
+<p><strong>fromhost</strong></p>
+<p>消息从认证那接受，对于多个转发的链路，这代表了上一个发送者，而非原始发送者。这是一个DNS解析的名字，除非解析失败或者解析被禁用</p>
+<p><strong>fromhost-ip</strong></p>
+<p>The same as fromhost, but always as an IP address. Local inputs (like imklog) use 127.0.0.1 in this property.</p>
+<p><strong>syslogtag</strong></p>
+<p>TAG from the message</p>
+<p><strong>programname</strong></p>
+<p>BSD syslogd中定义的tag的static部分。比如 “named[12345]”, programname 就是 “named”。</p>
+<p>确切的说，programname会被以下字符终结</p>
+<ul>
+<li>end of tag</li>
+<li>nonprintable character</li>
+<li>‘:’</li>
+<li>‘[‘</li>
+<li>‘/’</li>
+</ul>
+<p>如果你的程序包含了 ‘/‘，比如 “app/foo[1234]”，那programname就是app，如果是绝对路径比如“/app/foo[1234]”, programname 为空 (“”)。如果确实需要保存 ‘/‘，可以设置全局选项global(parser.permitSlashInProgramName=”on”) 来启用. </p>
+<p>Note: this option is available starting at rsyslogd version 8.25.0.</p>
+<p><strong>pri</strong></p>
+<p>PRI part of the message - undecoded (single value)，数字</p>
+<p><strong>pri-text</strong></p>
+<p>the PRI part of the message in a textual form with the numerical PRI appended in brackets (e.g. “local0.err&lt;133&gt;”)</p>
+<p><strong>iut</strong></p>
+<p>the monitorware InfoUnitType - used when talking to a <a target="_blank" rel="noopener" href="https://www.monitorware.com/">MonitorWare</a> backend (also for <a target="_blank" rel="noopener" href="https://loganalyzer.adiscon.com/">Adiscon LogAnalyzer</a>)</p>
+<p><strong>syslogfacility</strong></p>
+<p>the facility from the message - in numerical form</p>
+<p><strong>syslogfacility-text</strong></p>
+<p>the facility from the message - in text form</p>
+<p><strong>syslogseverity</strong></p>
+<p>severity from the message - in numerical form</p>
+<p><strong>syslogseverity-text</strong></p>
+<p>severity from the message - in text form</p>
+<p><strong>syslogpriority</strong></p>
+<p>an alias for syslogseverity - included for historical reasons (be careful: it still is the severity, not PRI!)</p>
+<p>仍是sererity，不是PRI！！</p>
+<p><strong>syslogpriority-text</strong></p>
+<p>an alias for syslogseverity-text</p>
+<p><strong>timegenerated</strong></p>
+<p>timestamp when the message was RECEIVED. Always in high resolution</p>
+<p><strong>timereported</strong></p>
+<p>timestamp from the message. Resolution depends on what was provided in the message (in most cases, only seconds)</p>
+<p><strong>timestamp</strong></p>
+<p>alias for timereported</p>
+<p><strong>protocol-version</strong></p>
+<p>The contents of the PROTOCOL-VERSION field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>structured-data</strong></p>
+<p>The contents of the STRUCTURED-DATA field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>app-name</strong></p>
+<p>The contents of the APP-NAME field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>procid</strong></p>
+<p>The contents of the PROCID field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>msgid</strong></p>
+<p>The contents of the MSGID field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>inputname</strong></p>
+<p>产生消息的imput module名 (e.g. “imuxsock”, “imudp”). 并不是所有的module会提供这个字段，可以留空，名字也可以随意定义，并不一定是真实的module名。</p>
+<p><strong>jsonmesg</strong></p>
+<blockquote>
+<p><em>Available since rsyslog 8.3.0</em></p>
+<p>The whole message object as JSON representation. Note that the JSON string will <em>not</em> include an LF and it will contain <em>all other message properties</em> specified here as respective JSON containers. It also includes all message variables in the “$!” subtree (this may be null if none are present).</p>
+<p>This property is primarily meant as an interface to other systems and tools that want access to the full property set (namely external plugins). Note that it contains the same data items potentially multiple times. For example, parts of the syslog tag will by contained in the rawmsg, syslogtag, and programname properties. As such, this property has some additional overhead. Thus, it is suggested to be used only when there is actual need for it.</p>
+</blockquote>
+<h2 id="System-Properties"><a href="#System-Properties" class="headerlink" title="System Properties"></a>System Properties</h2><p>rsyslog引擎产生的properties，和消息本身无关，名字以$开始</p>
+<p>注意一些时间相关的系统变量：</p>
+<ul>
+<li><code>timereported</code> 消息头部中的时间戳，代表消息产生的时间，取决于转发链的长度，这个时间有可能比当前落后很多</li>
+<li><code>timegenerated</code>  本地系统收到消息的时间。本地rsyslog接受缓存收到的时，在任何处理之前。如果buffer接收了多条消息，那这些消息的 <code>timegenerated</code>都是一样的</li>
+<li><code>$now</code> is <strong>not</strong> from the message. 系统开始处理消息的时间。与 <code>timegenerated</code>会有一些差异。 如果消息在队列中长时间等待，那差异可能会达到秒级，甚至小时级。</li>
+</ul>
+<p>一些系统属性：</p>
+<ul>
+<li><p><strong>$bom</strong></p>
+<p>The UTF-8 encoded Unicode byte-order mask (BOM). This may be useful in templates for RFC5424 support, when the character set is know to be Unicode.</p>
+</li>
+<li><p><strong>$myhostname</strong></p>
+<p>The name of the current host as it knows itself (probably useful for filtering in a generic way)</p>
+</li>
+</ul>
+<h3 id="Time-Related-System-Properties"><a href="#Time-Related-System-Properties" class="headerlink" title="Time-Related System Properties"></a>Time-Related System Properties</h3><p>以下这些系统属性存在于本地时间变量中（$now）和 UTC（￥now-utc）中。utc相关的变量都以“-utc” 结尾。在一个模板中，本地时间和UTC只能取其一。</p>
+<p>不同的模板在使用 $now时，可能会产生不同的结果，为了避免这种情况，建议使用 <em>timegenerated</em> 。</p>
+<ul>
+<li><p><strong>$now</strong></p>
+<p>The current date stamp in the format YYYY-MM-DD</p>
+</li>
+<li><p><strong>$year</strong></p>
+<p>The current year (4-digit)</p>
+</li>
+<li><p><strong>$month</strong></p>
+<p>The current month (2-digit)</p>
+</li>
+<li><p><strong>$day</strong></p>
+<p>The current day of the month (2-digit)</p>
+</li>
+<li><p><strong>$wday</strong></p>
+<p>The current week day as defined by ‘gmtime()’. 0=Sunday, …, 6=Saturday</p>
+</li>
+<li><p><strong>$hour</strong></p>
+<p>The current hour in military (24 hour) time (2-digit)</p>
+</li>
+<li><p><strong>$hhour</strong></p>
+<p>The current half hour we are in. From minute 0 to 29, this is always 0 while from 30 to 59 it is always 1.</p>
+</li>
+<li><p><strong>$qhour</strong></p>
+<p>The current quarter hour we are in. Much like $HHOUR, but values range from 0 to 3 (for the four quarter hours that are in each hour)</p>
+</li>
+<li><p><strong>$minute</strong></p>
+<p>The current minute (2-digit)</p>
+</li>
+<li><p><strong>$now-unixtimestamp</strong></p>
+<p>The current time as a unix timestamp (seconds since epoch). This actually is a monotonically increasing counter and as such can also be used for any other use cases that require such counters. This is an example of how to use it for rate-limiting:</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Get Unix timestamp of current message</span></span><br><span class="line"><span class="built_in">set</span> <span class="variable">$</span>.tnow = <span class="variable">$</span><span class="variable">$now</span><span class="literal">-unixtimestamp</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Rate limit info to 5 every 60 seconds</span></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$</span>!severity == <span class="number">6</span> and <span class="variable">$</span>!facility == <span class="number">17</span>) then &#123;</span><br><span class="line">  <span class="keyword">if</span> ((<span class="variable">$</span>.tnow - <span class="variable">$</span>/trate) &gt; <span class="number">60</span>) then &#123;</span><br><span class="line">    <span class="comment"># 5 seconds window expired, allow more messages</span></span><br><span class="line">    <span class="built_in">set</span> <span class="variable">$</span>/trate = <span class="variable">$</span>.tnow;</span><br><span class="line">    <span class="built_in">set</span> <span class="variable">$</span>/ratecount = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="variable">$</span>/ratecount &gt; <span class="number">5</span>) then &#123;</span><br><span class="line">    <span class="comment"># discard message</span></span><br><span class="line">    stop</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">set</span> <span class="variable">$</span>/ratecount = <span class="variable">$</span>/ratecount + <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>NOTE: by definition, there is no “UTC equivalent” of the $now-unixtimestamp property.</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/77ee3c23/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -312,7 +1863,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/posts/77ee3c23/" itemprop="url">rsyslog学习4--Templates</a></h1>
+                <a class="post-title-link" href="/posts/77ee3c23/" itemprop="url">rsyslog学习4 -- Templates</a></h1>
         
 
         <div class="post-meta">
@@ -705,7 +2256,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/posts/6bfe5ff2/" itemprop="url">rsyslog学习3--基本结构</a></h1>
+                <a class="post-title-link" href="/posts/6bfe5ff2/" itemprop="url">rsyslog学习3 -- 基本结构</a></h1>
         
 
         <div class="post-meta">
@@ -913,7 +2464,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/posts/6fb78df4/" itemprop="url">rsyslog学习2--sysklogd 格式</a></h1>
+                <a class="post-title-link" href="/posts/6fb78df4/" itemprop="url">rsyslog学习2 -- sysklogd 格式</a></h1>
         
 
         <div class="post-meta">
@@ -1121,7 +2672,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/posts/f6bedc4e/" itemprop="url">rsyslog学习1--配置格式</a></h1>
+                <a class="post-title-link" href="/posts/f6bedc4e/" itemprop="url">rsyslog学习1 -- 配置格式</a></h1>
         
 
         <div class="post-meta">
@@ -1600,7 +3151,7 @@
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1622,7 +3173,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1674,7 +3225,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">7k</span>
+    <span title="Site words total count">18k</span>
   
 </div>
 

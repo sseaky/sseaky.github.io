@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="rsyslog," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Actions 动作The Action object describe what is to be done with a message. They are implemented via output modules. The action object has different parameters:  those that apply to all actions and are ac">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rsyslog学习9 -- Actions 动作">
+<meta property="og:url" content="https://sseaky.github.io/posts/b1781d21/index.html">
+<meta property="og:site_name" content="Seaky&#39;s Blog">
+<meta property="og:description" content="Actions 动作The Action object describe what is to be done with a message. They are implemented via output modules. The action object has different parameters:  those that apply to all actions and are ac">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-09-28T15:55:38.000Z">
+<meta property="article:modified_time" content="2021-09-29T03:31:00.476Z">
+<meta property="article:author" content="Seaky">
+<meta property="article:tag" content="rsyslog">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://sseaky.github.io/posts/b1781d21/"/>
+
+
+
+
+
+  <title>rsyslog学习9 -- Actions 动作 | Seaky's Blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4bc374dc392c5b9f01c04806dd65f24d";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Seaky's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">What's past is prologue.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/b1781d21/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/bell.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seaky's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">rsyslog学习9 -- Actions 动作</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-28T23:55:38+08:00">
+                2021-09-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/b1781d21/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/posts/b1781d21/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  19
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Actions-动作"><a href="#Actions-动作" class="headerlink" title="Actions 动作"></a>Actions 动作</h1><p>The Action object describe what is to be done with a message. They are implemented via <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/idx_output.html">output modules</a>.</p>
+<p>The action object has different parameters:</p>
+<ul>
+<li>those that apply to all actions and are action specific. These are documented below.</li>
+<li>action队列的参数会应用到所有 action，参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/queue_parameters.html">queue parameters</a>.</li>
+<li>action-specific parameters. These are specific to a certain type of actions. They are documented by the <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/idx_output.html">output modules</a> in question.</li>
+</ul>
+<h2 id="General-Action-Parameters"><a href="#General-Action-Parameters" class="headerlink" title="General Action Parameters"></a>General Action Parameters</h2><p>大小写不敏感</p>
+<ul>
+<li><p><strong>name</strong> word</p>
+<p>This names the action. The name is used for statistics gathering and documentation. 如果没有名字，rsyslog会运达产生一个，编号从1ton</p>
+</li>
+<li><p><strong>type</strong> string</p>
+<p>强制参数， The name of the module that should be used.</p>
+</li>
+<li><p><strong>action.writeAllMarkMessages</strong> <em>on</em>/off</p>
+<p>默认on，每20分钟会发送mark消息给action，无论之前这个action是否被执行过，可以认为是一种心跳。一般设为on</p>
+</li>
+<li><p><strong>action.execOnlyEveryNthTime</strong> integer</p>
+<p>每隔一定的消息执行一次action，比如设为3，第1，2条消息会被丢弃，执行第3条，如是反复</p>
+</li>
+<li><p><strong>action.execOnlyEveryNthTimeout</strong> integer</p>
+<p>每隔一定的时间执行一次action。0表示不启用。在消息间隔很长时，会很有用，</p>
+</li>
+<li><p><strong>action.errorfile</strong> string</p>
+<p><em>New in version 8.32.0.</em></p>
+<p>一条消息由于某些原因执行失败，默认就被丢弃了。</p>
+<p>如果设置了本项，可以输出到指定文件。格式为JSON，包括失败的消息，action的名字，错误码，及错误原因。</p>
+<p><strong>action.execOnlyOnceEveryInterval</strong> integer</p>
+<p>在最后一次执行后指定时间执行Execute action only if the last execute is at last seconds in the past (more info in ommail, but may be used with any action)</p>
+</li>
+<li><p><strong>action.execOnlyWhenPreviousIsSuspended</strong> on/off</p>
+<p>设置为on时，当前一个action被挂起时，才会执行。比如用来自动切换目的地址，当主服务器失败后，发送到备用服务器</p>
+</li>
+<li><p><strong>action.repeatedmsgcontainsoriginalmsg</strong> on/off</p>
+<p>如果消息重复了，会提示“last message repeated n times” messages, 比较消息的n个字符，n至少为80</p>
+</li>
+<li><p><strong>action.resumeRetryCount</strong> integer</p>
+<p>[default 0, -1 means eternal]</p>
+<p>Sets how often an action is retried before it is considered to have failed. Failed actions discard messages.</p>
+</li>
+<li><p><strong>action.resumeInterval</strong> integer</p>
+<p>重试间隔，单位s。为防止在多消耗，每10次失败后，这个间隔扩大， (numRetries / 10 + 1) * action.resumeInterval. 比如30的间隔，在10次失败后会变成60，100次失败后变成 330</p>
+</li>
+<li><p><strong>action.resumeIntervalMax</strong> integer</p>
+<p>Default: 1800 (30 minutes)</p>
+<p>重试间隔最大值</p>
+<p><strong>action.reportSuspension</strong> on/off</p>
+<p>Configures rsyslog to report suspension and reactivation of the action. This is useful to note which actions have problems (e.g. connecting to a remote system) and when. The default for this setting is the equally-named global parameter.</p>
+</li>
+<li><p><strong>action.reportSuspensionContinuation</strong> on/off</p>
+<p>Configures rsyslog to report continuation of action suspension. This emits new messages whenever an action is to be retried, but continues to fail. If set to “on”, <em>action.reportSuspension</em> is also automatically set to “on”. The default for this setting is the equally-named global parameter.</p>
+</li>
+<li><p><strong>action.copyMsg</strong> on/<em>off</em></p>
+<p>Configures action to <em>copy</em> the message if <em>on</em>. Defaults to <em>off</em> (which is how actions have worked traditionally), which causes queue to refer to the original message object, with reference-counting. (Introduced with 8.10.0).</p>
+</li>
+</ul>
+<h2 id="Useful-Links"><a href="#Useful-Links" class="headerlink" title="Useful Links"></a>Useful Links</h2><ul>
+<li>Rainer’s blog posting on the performance of <a target="_blank" rel="noopener" href="https://rainer.gerhards.net/2013/06/rsyslog-performance-main-and-action.html">main and action queue worker threads</a></li>
+</ul>
+<h2 id="Legacy-Format"><a href="#Legacy-Format" class="headerlink" title="Legacy Format"></a>Legacy Format</h2><p><strong>Legacy action很能写正确，有可能的话，</strong> A key problem with legacy format is that a single action is defined via multiple configurations lines, which may be spread all across rsyslog.conf. Even the definition of multiple actions may be intermixed (often not intentional!). If legacy actions format needs to be used (e.g. some modules may not yet implement the RainerScript format), it is strongly recommended to place all configuration statements pertaining to a single action closely together.</p>
+<p>Please also note that legacy action parameters <strong>do not</strong> affect RainerScript action objects. So if you define for example:</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$actionResumeRetryCount</span> <span class="number">10</span></span><br><span class="line"><span class="function"><span class="title">action</span><span class="params">(type=<span class="string">&quot;omfwd&quot;</span> target=<span class="string">&quot;server1.example.net&quot;</span>)</span></span></span><br><span class="line">@@server2<span class="selector-class">.example</span>.net</span><br></pre></td></tr></table></figure>
+
+<p>server1’s “action.resumeRetryCount” parameter is <strong>not</strong> set, instead server2’s is!</p>
+<p>A goal of the new RainerScript action format was to avoid confusion which parameters are actually used. As such, it would be counter-productive to honor legacy action parameters inside a RainerScript definition. As result, both types of action definitions are strictly (and nicely) separated from each other. The bottom line is that if RainerScript actions are used, one does not need to care about which legacy action parameters may (still…) be in effect.</p>
+<p>Note that not all modules necessarily support legacy action format. Especially newer modules are recommended to NOT support it.</p>
+<h3 id="Legacy-Description"><a href="#Legacy-Description" class="headerlink" title="Legacy Description"></a>Legacy Description</h3><p>Templates can be used with many actions. If used, the specified template is used to generate the message content (instead of the default template). To specify a template, write a semicolon after the action value immediately followed by the template name. Beware: templates MUST be defined BEFORE they are used. It is OK to define some templates, then use them in selector lines, define more templates and use use them in the following selector lines. But it is NOT permitted to use a template in a selector line that is above its definition. If you do this, the action will be ignored.</p>
+<p><strong>可以对一个selector使用多个actions</strong> (or more precisely a single filter of such a selector line). 每一个action必须单独一行，以&amp;打头</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">*.=crit <span class="symbol">:omusrmsg</span><span class="symbol">:rger</span></span><br><span class="line">&amp; root</span><br><span class="line">&amp; <span class="regexp">/var/log</span><span class="regexp">/critmsgs</span></span><br></pre></td></tr></table></figure>
+
+<p>These three lines send critical messages to the user rger and root and also store them in /var/log/critmsgs. <strong>Using multiple actions per selector is</strong> convenient and also <strong>offers a performance benefit</strong>. As the filter needs to be evaluated only once, there is less computation required to process the directive compared to the otherwise-equal config directives below:</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">*<span class="string">.=crit</span> <span class="function">:omusrmsg</span><span class="function">:rger</span></span><br><span class="line">*<span class="string">.=crit</span> root</span><br><span class="line">*<span class="string">.=crit</span> <span class="string">/var/log/critmsgs</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Regular-File"><a href="#Regular-File" class="headerlink" title="Regular File"></a>Regular File</h3><p>消息一般会记录到文件 ，文件名使用全路径，以/起始，新版本也支持相对路径，必须以./起始。如“./file-in-current-dir.log”。但相对路径不可靠，必须要经过严格测试。可以在前面加 “-‘ 来省略文件同步，但如果系统崩溃的话可能会丢失消息，但会提高性能，尤其是记录很长的消息。所以如果有可靠的USP，并且要记录很多消息，可以开启 -</p>
+<p>文件名可以是静态，也可以动态，有助于将消息分类保存。</p>
+<p>可以和模板一起工作。首先定义一个文件名的模板，我们取名模板为DynFile，然后使用”?”来调用文件动态文件名</p>
+<blockquote>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="strong">*.*</span> ?DynFile</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="strong">*.*</span> -?DynFile</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>也可以使用模板来输出</p>
+<blockquote>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="strong">*.*</span> ?DynFile;MyTemplate</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>支持自动创建目录</p>
+<blockquote>
+<figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">$template</span> DynFile,<span class="string">&quot;/var/log/%HOSTNAME%/%programname%.log&quot;</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="Named-Pipes"><a href="#Named-Pipes" class="headerlink" title="Named Pipes"></a>Named Pipes</h3><p>This version of rsyslogd(8) has support for logging output to named pipes (fifos). A fifo or named pipe can be used as a destination for log messages by prepending a pipe symbol (“|’‘) to the name of the file. This is handy for debugging. Note that the fifo must be created with the mkfifo(1) command before rsyslogd(8) is started.</p>
+<h3 id="Terminal-and-Console"><a href="#Terminal-and-Console" class="headerlink" title="Terminal and Console"></a>Terminal and Console</h3><p>If the file you specified is a tty, special tty-handling is done, same with /dev/console.</p>
+<h3 id="Remote-Machine"><a href="#Remote-Machine" class="headerlink" title="Remote Machine"></a>Remote Machine</h3><p>要发行其它host，在hostname前加@，默认UDP，如果需要TCP，加@@。TCP不是syslog的官方标准，但另一些app支持，比如syslog-ng或<a target="_blank" rel="noopener" href="https://www.winsyslog.com/">WinSyslog</a>。 </p>
+<p>可以加一些option，不要加空格，用()包围，多个option用逗号分割</p>
+<p><strong>z<number></strong></p>
+<p>Enable zlib-compression for the message. The <number> is the compression level. It can be 1 (lowest gain, lowest CPU overhead) to 9 (maximum compression, highest CPU overhead). The level can also be 0, which means “no compression”. If given, the “z” option is ignored. So this does not make an awful lot of sense. There is hardly a difference between level 1 and 9 for typical syslog messages. You can expect a compression gain between 0% and 30% for typical messages. Very chatty messages may compress up to 50%, but this is seldom seen with typically traffic. Please note that rsyslogd checks the compression gain. Messages with 60 bytes or less will never be compressed. This is because compression gain is pretty unlikely and we prefer to save CPU cycles. Messages over that size are always compressed. However, it is checked if there is a gain in compression and only if there is, the compressed message is transmitted. Otherwise, the uncompressed messages is transmitted. This saves the receiver CPU cycles for decompression. It also prevents small message to actually become larger in compressed form.</p>
+<p><strong>Please note that when a TCP transport is used, compression will also turn on syslog-transport-tls framing. See the “o” option for important information on the implications.</strong></p>
+<p>Compressed messages 能被接受方自动识别，无需配置。</p>
+<p><strong>o</strong></p>
+<p><strong>This option is experimental. Use at your own risk and only if you know why you need it! If in doubt, do NOT turn it on.</strong></p>
+<p>This option is only valid for plain <strong>TCP</strong> based transports. It selects a different framing based on IETF internet draft syslog-transport-tls-06. This framing offers some benefits over traditional LF-based framing. However, the standardization effort is not yet complete. There may be changes in upcoming versions of this standard. Rsyslog will be kept in line with the standard. There is some chance that upcoming changes will be incompatible to the current specification. In this case, all systems using -transport-tls framing must be upgraded. There will be no effort made to retain compatibility between different versions of rsyslog. The primary reason for that is that it seems technically impossible to provide compatibility between some of those changes. So you should take this note very serious. It is not something we do not <em>like</em> to do (and may change our mind if enough people beg…), it is something we most probably <em>can not</em> do for technical reasons (aka: you can beg as much as you like, it won’t change anything…).</p>
+<p>The most important implication is that compressed syslog messages via TCP must be considered with care. Unfortunately, it is technically impossible to transfer compressed records over traditional syslog plain tcp transports, so you are left with two evil choices…</p>
+<blockquote>
+<p>The hostname may be followed by a colon and the destination port.</p>
+</blockquote>
+<p>The following is an example selector line with forwarding:</p>
+<p><em>.</em>  @@(o,z9)192.168.0.1:1470</p>
+<p>In this example, messages are forwarded via plain TCP with experimental framing and maximum compression to the host 192.168.0.1 at port 1470.</p>
+<p><em>.</em> @192.168.0.1</p>
+<p>In the example above, messages are forwarded via UDP to the machine 192.168.0.1, the destination port defaults to 514. Messages will not be compressed.</p>
+<p>Note that IPv6 addresses contain colons. So if an IPv6 address is specified in the hostname part, rsyslogd could not detect where the IP address ends and where the port starts. There is a syntax extension to support this: put square brackets around the address (e.g. “[2001::1]”). Square brackets also work with real host names and IPv4 addresses, too.</p>
+<p>A valid sample to send messages to the IPv6 host 2001::1 at port 515 is as follows:</p>
+<p><em>.</em> @[2001::1]:515</p>
+<p>This works with TCP, too.</p>
+<p><strong>Note to sysklogd users:</strong> sysklogd does <strong>not</strong> support RFC 3164 format, which is the default forwarding template in rsyslog. As such, you will experience duplicate hostnames if rsyslog is the sender and sysklogd is the receiver. The fix is simple: you need to use a different template. Use that one:</p>
+<ul>
+<li><p>$template sysklogd,”&lt;%PRI%&gt;%TIMESTAMP% %syslogtag%%msg%””</p>
+<p><em>.</em> @192.168.0.1;sysklogd</p>
+</li>
+</ul>
+<h3 id="List-of-Users"><a href="#List-of-Users" class="headerlink" title="List of Users"></a>List of Users</h3><p>Usually critical messages are also directed to “root’’ on that machine. You can specify a list of users that shall get the message by simply writing “:omusrmsg: followed by the login name. For example, the send messages to root, use “:omusrmsg:root”. You may specify more than one user by separating them with commas (“,’‘). Do not repeat the “:omusrmsg:” prefix in this case. For example, to send data to users root and rger, use “:omusrmsg:root,rger” (do not use “:omusrmsg:root,:omusrmsg:rger”, this is invalid). If they’re logged in they get the message.</p>
+<h3 id="Everyone-logged-on"><a href="#Everyone-logged-on" class="headerlink" title="Everyone logged on"></a>Everyone logged on</h3><p>Emergency messages often go to all users currently online to notify them that something strange is happening with the system. To specify this wall(1)-feature use an asterisk as the user message destination(“:omusrmsg:*’‘).</p>
+<h3 id="Call-Plugin"><a href="#Call-Plugin" class="headerlink" title="Call Plugin"></a>Call Plugin</h3><p>This is a generic way to call an output plugin. The plugin must support this functionality. Actual parameters depend on the module, so see the module’s doc on what to supply. The general syntax is as follows:</p>
+<p>:modname:params;template</p>
+<p>Currently, the ommysql database output module supports this syntax (in addition to the “&gt;” syntax it traditionally supported). For ommysql, the module name is “ommysql” and the params are the traditional ones. The ;template part is not module specific, it is generic rsyslog functionality available to all modules.</p>
+<p>As an example, the ommysql module may be called as follows:</p>
+<p>:ommysql:dbhost,dbname,dbuser,dbpassword;dbtemplate</p>
+<p>For details, please see the “Database Table” section of this documentation.</p>
+<p>Note: as of this writing, the “:modname:” part is hardcoded into the module. So the name to use is not necessarily the name the module’s plugin file is called.</p>
+<h3 id="Database-Table"><a href="#Database-Table" class="headerlink" title="Database Table"></a>Database Table</h3><p>This allows logging of the message to a database table. Currently, only MySQL databases are supported. However, other database drivers will most probably be developed as plugins. By default, a <a target="_blank" rel="noopener" href="https://www.mwagent.com/">MonitorWare</a>-compatible schema is required for this to work. You can create that schema with the createDB.SQL file that came with the rsyslog package. You can also use any other schema of your liking - you just need to define a proper template and assign this template to the action. The database writer is called by specifying a greater-then sign (“&gt;”) in front of the database connect information. Immediately after that sign the database host name must be given, a comma, the database name, another comma, the database user, a comma and then the user’s password. If a specific template is to be used, a semicolon followed by the template name can follow the connect information. This is as follows: &gt;dbhost,dbname,dbuser,dbpassword;dbtemplate</p>
+<p><strong>Important: to use the database functionality, the MySQL output module must be loaded in the config file</strong> BEFORE the first database table action is used. This is done by placing the</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"><span class="meta-keyword">$ModLoad</span> ommysql</span></span><br></pre></td></tr></table></figure>
+
+<p>directive some place above the first use of the database write (we recommend doing at the beginning of the config file).</p>
+<h3 id="Discard-Stop"><a href="#Discard-Stop" class="headerlink" title="Discard / Stop"></a>Discard / Stop</h3><p>If the discard action is carried out, the received message is immediately discarded. No further processing of it occurs. Discard has primarily been added to filter out messages before carrying on any further processing. For obvious reasons, the results of “discard” are depending on where in the configuration file it is being used. Please note that once a message has been discarded there is no way to retrieve it in later configuration file lines.</p>
+<p>Discard can be highly effective if you want to filter out some annoying messages that otherwise would fill your log files. To do that, place the discard actions early in your log files. This often plays well with property-based filters, giving you great freedom in specifying what you do not want.</p>
+<p>Discard is just the word “stop” with no further parameters:</p>
+<p>stop</p>
+<p>For example,</p>
+<p><em>.</em>  stop</p>
+<p>discards everything (ok, you can achieve the same by not running rsyslogd at all…).</p>
+<p>Note that in legacy configuration the tilde character “~” can also be used instead of the word “stop”.</p>
+<h3 id="Output-Channel"><a href="#Output-Channel" class="headerlink" title="Output Channel"></a>Output Channel</h3><p>Binds an output channel definition (see there for details) to this action. Output channel actions must start with a $-sign, e.g. if you would like to bind your output channel definition “mychannel” to the action, use “$mychannel”. Output channels support template definitions like all all other actions.</p>
+<h3 id="Shell-Execute"><a href="#Shell-Execute" class="headerlink" title="Shell Execute"></a>Shell Execute</h3><p><strong>NOTE: This action is only supported for backwards compatibility. For new configs, use</strong> <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/omprog.html">omprog</a> <strong>instead. It provides a more solid and secure solution with higher performance.</strong></p>
+<p>This executes a program in a subshell. The program is passed the template-generated message as the only command line parameter. Rsyslog waits until the program terminates and only then continues to run.</p>
+<p>^program-to-execute;template</p>
+<p>The program-to-execute can be any valid executable. It receives the template string as a single parameter (argv[1]).</p>
+<p><strong>WARNING:</strong> The Shell Execute action was added to serve an urgent need. While it is considered reasonable save when used with some thinking, its implications must be considered. The current implementation uses a system() call to execute the command. This is not the best way to do it (and will hopefully changed in further releases). Also, proper escaping of special characters is done to prevent command injection. However, attackers always find smart ways to circumvent escaping, so we can not say if the escaping applied will really safe you from all hassles. Lastly, rsyslog will wait until the shell command terminates. Thus, a program error in it (e.g. an infinite loop) can actually disable rsyslog. Even without that, during the programs run-time no messages are processed by rsyslog. As the IP stacks buffers are quickly overflowed, this bears an increased risk of message loss. You must be aware of these implications. Even though they are severe, there are several cases where the “shell execute” action is very useful. This is the reason why we have included it in its current form. To mitigate its risks, always a) test your program thoroughly, b) make sure its runtime is as short as possible (if it requires a longer run-time, you might want to spawn your own sub-shell asynchronously), c) apply proper firewalling so that only known senders can send syslog messages to rsyslog. Point c) is especially important: if rsyslog is accepting message from any hosts, chances are much higher that an attacker might try to exploit the “shell execute” action.</p>
+<h3 id="Template-Name"><a href="#Template-Name" class="headerlink" title="Template Name"></a>Template Name</h3><p>Every ACTION can be followed by a template name. If so, that template is used for message formatting. If no name is given, a hard-coded default template is used for the action. There can only be one template name for each given action. The default template is specific to each action. For a description of what a template is and what you can do with it, see the <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/templates.html">template</a> documentation.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/rsyslog/" rel="tag"># rsyslog</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/4411ca20/" rel="next" title="rsyslog学习8 -- RainerScript">
+                <i class="fa fa-chevron-left"></i> rsyslog学习8 -- RainerScript
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/bell.png"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Actions-%E5%8A%A8%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">Actions 动作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#General-Action-Parameters"><span class="nav-number">1.1.</span> <span class="nav-text">General Action Parameters</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Useful-Links"><span class="nav-number">1.2.</span> <span class="nav-text">Useful Links</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Legacy-Format"><span class="nav-number">1.3.</span> <span class="nav-text">Legacy Format</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Legacy-Description"><span class="nav-number">1.3.1.</span> <span class="nav-text">Legacy Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Regular-File"><span class="nav-number">1.3.2.</span> <span class="nav-text">Regular File</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Named-Pipes"><span class="nav-number">1.3.3.</span> <span class="nav-text">Named Pipes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Terminal-and-Console"><span class="nav-number">1.3.4.</span> <span class="nav-text">Terminal and Console</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Remote-Machine"><span class="nav-number">1.3.5.</span> <span class="nav-text">Remote Machine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#List-of-Users"><span class="nav-number">1.3.6.</span> <span class="nav-text">List of Users</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Everyone-logged-on"><span class="nav-number">1.3.7.</span> <span class="nav-text">Everyone logged on</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Call-Plugin"><span class="nav-number">1.3.8.</span> <span class="nav-text">Call Plugin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Database-Table"><span class="nav-number">1.3.9.</span> <span class="nav-text">Database Table</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Discard-Stop"><span class="nav-number">1.3.10.</span> <span class="nav-text">Discard &#x2F; Stop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Output-Channel"><span class="nav-number">1.3.11.</span> <span class="nav-text">Output Channel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Shell-Execute"><span class="nav-number">1.3.12.</span> <span class="nav-text">Shell Execute</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Template-Name"><span class="nav-number">1.3.13.</span> <span class="nav-text">Template Name</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seaky</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">18k</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+      <div id="needsharebutton-float">
+        <span class="btn">
+          <i class="fa fa-share-alt" aria-hidden="true"></i>
+        </span>
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '5wqIQ2T2tGwUuw4A2BeYIhKw-gzGzoHsz',
+        appKey: 'rugnSK3XneQp4jyP53QBKTsj',
+        placeholder: '说点什么吧',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+    
+      flOptions = {};
+      
+          flOptions.iconStyle = "box";
+      
+          flOptions.boxForm = "horizontal";
+      
+          flOptions.position = "topRight";
+      
+          flOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
+      
+      new needShareButton('#needsharebutton-float', flOptions);
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

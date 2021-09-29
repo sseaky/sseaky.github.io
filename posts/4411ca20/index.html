@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="rsyslog," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="RainerScriptRainerScript是一种处理网络事件、配置、过程的脚本语言，是rsyslog的主要配置语言。不能简写成rscript，因为已经被注册了。 v6后支持。 Data Types 数据类型RainerScript是一种typeless语言，不需要关心数据类型。不能使用 “A” + “B” ，可以使用 &amp; 连接。有需要的话脚本会自动转换类型 Expressions 表">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rsyslog学习8 -- RainerScript">
+<meta property="og:url" content="https://sseaky.github.io/posts/4411ca20/index.html">
+<meta property="og:site_name" content="Seaky&#39;s Blog">
+<meta property="og:description" content="RainerScriptRainerScript是一种处理网络事件、配置、过程的脚本语言，是rsyslog的主要配置语言。不能简写成rscript，因为已经被注册了。 v6后支持。 Data Types 数据类型RainerScript是一种typeless语言，不需要关心数据类型。不能使用 “A” + “B” ，可以使用 &amp; 连接。有需要的话脚本会自动转换类型 Expressions 表">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-09-28T09:54:40.000Z">
+<meta property="article:modified_time" content="2021-09-29T02:31:09.061Z">
+<meta property="article:author" content="Seaky">
+<meta property="article:tag" content="rsyslog">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://sseaky.github.io/posts/4411ca20/"/>
+
+
+
+
+
+  <title>rsyslog学习8 -- RainerScript | Seaky's Blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4bc374dc392c5b9f01c04806dd65f24d";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Seaky's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">What's past is prologue.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/4411ca20/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/bell.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seaky's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">rsyslog学习8 -- RainerScript</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-28T17:54:40+08:00">
+                2021-09-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/4411ca20/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/posts/4411ca20/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  17
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="RainerScript"><a href="#RainerScript" class="headerlink" title="RainerScript"></a>RainerScript</h1><p>RainerScript是一种处理网络事件、配置、过程的脚本语言，是rsyslog的主要配置语言。不能简写成rscript，因为已经被注册了。</p>
+<p>v6后支持。</p>
+<h1 id="Data-Types-数据类型"><a href="#Data-Types-数据类型" class="headerlink" title="Data Types 数据类型"></a>Data Types 数据类型</h1><p>RainerScript是一种typeless语言，不需要关心数据类型。不能使用 “A” + “B” ，可以使用 &amp; 连接。有需要的话脚本会自动转换类型</p>
+<h1 id="Expressions-表达式"><a href="#Expressions-表达式" class="headerlink" title="Expressions 表达式"></a>Expressions 表达式</h1><p>支持任意复杂表达式。下面按优先级列出各表达式</p>
+<ul>
+<li>expressions in parenthesis</li>
+<li>not, unary minus</li>
+<li>*, /, % (modulus, as in C)</li>
+<li>+, -, &amp; (string concatenation)</li>
+<li>==, !=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=, contains (strings!), startswith (strings!)</li>
+<li>and</li>
+<li>or</li>
+</ul>
+<p>比如，“not a == b” 的返回很有可能不是你想要的，因为脚本处理器会运算“not a”等到一个布尔值再与b比较，而你可能想要的是 “not (a == b)”。</p>
+<p>如果要使用不等于，建议使用 “!=” or “&lt;&gt;”，两者是一样的。“not” 一般用在需要使用布尔值的场合。</p>
+<h1 id="Functions-函数"><a href="#Functions-函数" class="headerlink" title="Functions 函数"></a>Functions 函数</h1><p>有两种函数，build-ins和modules。Built-in可以随时被调用 ，而modules需要事先被载入。</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">module</span><span class="params">(load=<span class="string">&quot;&lt;name of module&gt;&quot;</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>如果有多于一个的函数使用了相同的名字，第一个载入的有效，同时，会产生一个错误消息，但不会中止。build-in函数总是预先被载入，所以会占据这些名字。</p>
+<ul>
+<li>Built-in Functions<ul>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-ipv4convert.html">ipv42num()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-ipv4convert.html">num2ipv4()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-trim.html">ltrim()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-trim.html">rtrim()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-cnum.html">cnum()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-cstr.html">cstr()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-dyn_inc.html">dyn_inc()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-exec_template.html">exec_template()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-exists.html">exists()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-field.html">field()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-format_time.html">format_time()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-get_property.html">get_property()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-getenv.html">getenv()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-int2hex.html">int2hex()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-is_time.html">is_time()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-lookup.html">lookup()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-parse_json.html">parse_json()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-parse_time.html">parse_time()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-previous_action_suspended.html">previous_action_suspended()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-prifilt.html">prifilt()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-random.html">random()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-re_extract.html">re_extract()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-re_extract_i.html">re_extract_i()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-re_match.html">re_match()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-re_match_i.html">re_match_i()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-replace.html">replace()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-script_error.html">script_error()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-strlen.html">strlen()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-substring.html">substring()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-tolower.html">tolower()</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/rs-wrap.html">wrap()</a></li>
+</ul>
+</li>
+<li>Module Functions<ul>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/mo-hashXX.html">HashXX</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/mo-hashXXmod.html">HashXXmod</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/mo-http_request.html">HTTP-Request</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/functions/mo-unflatten.html">Unflatten</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="Control-Structures-控制结构"><a href="#Control-Structures-控制结构" class="headerlink" title="Control Structures 控制结构"></a>Control Structures 控制结构</h1><h2 id="if"><a href="#if" class="headerlink" title="if"></a>if</h2><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable">$msg</span> contains <span class="string">&quot;important&quot;</span>) then &#123;</span><br><span class="line">   <span class="keyword">if</span> ( <span class="variable">$</span>.foo != <span class="string">&quot;&quot;</span> ) then <span class="built_in">set</span> <span class="variable">$</span>.foo = <span class="variable">$</span>.bar &amp; <span class="variable">$</span>.baz;</span><br><span class="line">   action(<span class="built_in">type</span>=<span class="string">&quot;omfile&quot;</span> file=<span class="string">&quot;/var/log/important.log&quot;</span> template=<span class="string">&quot;outfmt&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="if-else-if-else"><a href="#if-else-if-else" class="headerlink" title="if/else-if/else"></a>if/else-if/else</h2><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable">$msg</span> contains <span class="string">&quot;important&quot;</span>) then &#123;</span><br><span class="line">   <span class="builtin-name">set</span> $.foo = $.bar &amp; $.baz;</span><br><span class="line">   action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/important.log&quot;</span> <span class="attribute">template</span>=<span class="string">&quot;outfmt&quot;</span>)</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="variable">$msg</span> startswith <span class="string">&quot;slow-query:&quot;</span>) then &#123;</span><br><span class="line">   action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/slow_log.log&quot;</span> <span class="attribute">template</span>=<span class="string">&quot;outfmt&quot;</span>)</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">   <span class="builtin-name">set</span> $.foo = $.quux;</span><br><span class="line">   action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/general.log&quot;</span> <span class="attribute">template</span>=<span class="string">&quot;outfmt&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="foreach"><a href="#foreach" class="headerlink" title="foreach"></a>foreach</h2><p>要说明的是，一般对于foreach会存在误解，这个只能工作于json结构，事实上，我们当时应该拒绝 foreach的，只是太迟了。</p>
+<p>要记住，在这种脚本语言中，没有array的概念，因为我们不想把事情搞得太复杂。只能在一些配置对象和一组选择比较时使用。</p>
+<p>如果你在解析json，foreach可以迭代json array和json objects。array是有序的，object是kay-value，无序。</p>
+<p>For the foreach invocation below:</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span> (<span class="variable">$</span>.i <span class="keyword">in</span> <span class="variable">$</span>.collection) <span class="keyword">do</span> &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Say <code>$.collection</code> holds an array <code>[1, &quot;2&quot;, &#123;&quot;a&quot;: &quot;b&quot;&#125;, 4]</code>, value of <code>$.i</code> across invocations would be <code>1</code>, <code>&quot;2&quot;</code>, <code>&#123;&quot;a&quot; : &quot;b&quot;&#125;</code> and <code>4</code>.</p>
+<p><code>$.collection</code> 必须来源于 JSON (via mmjsonparse).</p>
+<p>When <code>$.collection</code> holds an object <code>&#123;&quot;a&quot;: &quot;b&quot;, &quot;c&quot; : [1, 2, 3], &quot;d&quot; : &#123;&quot;foo&quot;: &quot;bar&quot;&#125;&#125;</code>, value of <code>$.i</code> across invocations would be <code>&#123;&quot;key&quot; : &quot;a&quot;, &quot;value&quot; : &quot;b&quot;&#125;</code>, <code>&#123;&quot;key&quot; : &quot;c&quot;, &quot;value&quot; : [1, 2, 3]&#125;</code> and <code>&#123;&quot;key&quot; : &quot;d&quot;, &quot;value&quot; : &#123;&quot;foo&quot; : &quot;bar&quot;&#125;&#125;</code> (not necessarily in the that order). In this case key and value will need to be accessed as <strong><code>$.i!key</code> and <code>$.i!value</code></strong> respectively.</p>
+<p>Here is an example of a nested foreach statement:</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span> (<span class="variable">$</span>.quux <span class="keyword">in</span> <span class="variable">$</span>!foo) <span class="keyword">do</span> &#123;</span><br><span class="line">   action(<span class="built_in">type</span>=<span class="string">&quot;omfile&quot;</span> file=<span class="string">&quot;./rsyslog.out.log&quot;</span> template=<span class="string">&quot;quux&quot;</span>)</span><br><span class="line">   <span class="keyword">foreach</span> (<span class="variable">$</span>.corge <span class="keyword">in</span> <span class="variable">$</span>.quux!bar) <span class="keyword">do</span> &#123;</span><br><span class="line">      reset <span class="variable">$</span>.grault = <span class="variable">$</span>.corge;</span><br><span class="line">      action(<span class="built_in">type</span>=<span class="string">&quot;omfile&quot;</span> file=<span class="string">&quot;./rsyslog.out.log&quot;</span> template=<span class="string">&quot;grault&quot;</span>)</span><br><span class="line">      <span class="keyword">if</span> (<span class="variable">$</span>.garply != <span class="string">&quot;&quot;</span>) then</span><br><span class="line">          <span class="built_in">set</span> <span class="variable">$</span>.garply = <span class="variable">$</span>.garply &amp; <span class="string">&quot;, &quot;</span>;</span><br><span class="line">      reset <span class="variable">$</span>.garply = <span class="variable">$</span>.garply &amp; <span class="variable">$</span>.grault!baz;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Again, the itereted items must have been created by parsing JSON.</p>
+<p>Please note that asynchronous-action calls in foreach-statement body should almost always set <code>action.copyMsg</code> to <code>on</code>. This is because action calls within foreach usually want to work with the variable loop populates (in the above example, <code>$.quux</code> and <code>$.corge</code>) which causes message-mutation and async-action must see message as it was in a certain invocation of loop-body, so they must make a copy to keep it safe from further modification as iteration continues. For instance, an async-action invocation with linked-list based queue would look like:</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span> ($.quux <span class="keyword">in</span> $!foo) <span class="keyword">do</span> &#123;</span><br><span class="line">    action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;./rsyslog.out.log&quot;</span> <span class="attribute">template</span>=<span class="string">&quot;quux</span></span><br><span class="line"><span class="string">           queue.type=&quot;</span>linkedlist&quot; action.<span class="attribute">copyMsg</span>=<span class="string">&quot;on&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这种代码是无效的，因为不是从json创建的对象</span></span><br><span class="line"><span class="built_in">set</span> <span class="variable">$</span>.noarr = [<span class="string">&quot;192.168.1.1&quot;</span>, <span class="string">&quot;192.168.2.&quot;</span>];</span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$</span>.elt <span class="keyword">in</span> <span class="variable">$</span>.noarr) <span class="keyword">do</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="call"><a href="#call" class="headerlink" title="call"></a>call</h2><p>Details here: <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/rainerscript_call.html">The rsyslog “call” statement</a></p>
+<h2 id="continue"><a href="#continue" class="headerlink" title="continue"></a>continue</h2><p>A NOP, useful e.g. inside the <code>then</code> part of an if-structure.</p>
+<h1 id="configuration-objects-配置对象"><a href="#configuration-objects-配置对象" class="headerlink" title="configuration objects 配置对象"></a>configuration objects 配置对象</h1><h2 id="Common-Parameters"><a href="#Common-Parameters" class="headerlink" title="Common Parameters"></a>Common Parameters</h2><h3 id="config-enabled"><a href="#config-enabled" class="headerlink" title="config.enabled"></a>config.enabled</h3><p><em>New in version 8.33.0.</em></p>
+<p>所有的配置对象都有 config.enabled 参数 ，用来禁用它们。如果设置为on或留空，配置会被启用，如果是其它值，值忽略。这个可以从环境变量或文件中，利用反引号`来调整。</p>
+<p>比如，将环境变量LOAD_MPTCP设为off，然后构建</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">module(<span class="attribute">load</span>=<span class="string">&quot;imptcp&quot;</span></span><br><span class="line">     config.<span class="attribute">enabled</span>=`echo <span class="variable">$LOAD_IMPTCP</span>`)</span><br></pre></td></tr></table></figure>
+
+<p>该模块不会被载入</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">module(<span class="attribute">load</span>=<span class="string">&quot;imptcp&quot;</span></span><br><span class="line">     config.<span class="attribute">enabled</span>=`echo <span class="variable">$LOAD_IMPTCP</span>`)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">module(<span class="attribute">load</span>=<span class="string">&quot;imptcp&quot;</span></span><br><span class="line">     config.<span class="attribute">enabled</span>=`echo <span class="variable">$LOAD_IMPTCP</span>`)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Objects"><a href="#Objects" class="headerlink" title="Objects"></a>Objects</h2><h3 id="action"><a href="#action" class="headerlink" title="action()"></a>action()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/actions.html">action</a> object is the primary means of describing actions to be carried out.</p>
+<h3 id="global"><a href="#global" class="headerlink" title="global()"></a>global()</h3><p>This is used to set global configuration parameters. For details, please see the <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/global.html">rsyslog global configuration object</a>.</p>
+<h3 id="input"><a href="#input" class="headerlink" title="input()"></a>input()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/input.html">input</a> object is the primary means of describing inputs, which are used to gather messages for rsyslog processing.</p>
+<h3 id="module"><a href="#module" class="headerlink" title="module()"></a>module()</h3><p>The module object is used to load plugins.</p>
+<h3 id="parser"><a href="#parser" class="headerlink" title="parser()"></a>parser()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/parser.html">parser</a> object is used to define custom parser objects.</p>
+<h3 id="timezone"><a href="#timezone" class="headerlink" title="timezone()"></a>timezone()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/timezone.html">timezone</a> object is used to define timezone settings.</p>
+<h3 id="include"><a href="#include" class="headerlink" title="include()"></a>include()</h3><p>The <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/include.html">include</a> object is use to include configuration snippets stored elsewhere into the configuration.</p>
+<h1 id="String-Constants-字串常量"><a href="#String-Constants-字串常量" class="headerlink" title="String Constants 字串常量"></a>String Constants 字串常量</h1><p>字串常量是所有的脚本语言所必须，提供了程序开始时的一些值。</p>
+<h2 id="Uses"><a href="#Uses" class="headerlink" title="Uses"></a>Uses</h2><p>比较，配置参数，函数参数等地方都要用到。</p>
+<p>在字串常量中，特殊字符需要用反斜杠去注明。想要知道如何去正确的escape，使用工具 <a target="_blank" rel="noopener" href="http://www.rsyslog.com/rainerscript-constant-string-escaper/">RainerScript String Escape Online Tool</a>.</p>
+<h2 id="Types"><a href="#Types" class="headerlink" title="Types"></a>Types</h2><p>Rsyslog 提供了多种字串常量，与shell类似:</p>
+<ul>
+<li><p>单引号</p>
+<p>可以被escape</p>
+</li>
+<li><p>双引号</p>
+<p>在单引号的基础上，对$进行escape，如果无法被escape，将会产生一个语法错误，导致启动失败</p>
+</li>
+<li><p>反引号</p>
+<p>This was added in 8.33.0. 与shell中类似，only the following is supported:</p>
+<ul>
+<li><p>echo $VARNAME - It will evaluate the environment variable and use it as string constant. If the variable is not found, an empty string is generated (this is <strong>not</strong> an error).</p>
+<p>从8.37开始，echo被加强了，支持环境变量和字串常量混合</p>
+<p>An example:</p>
+<ul>
+<li>env SOMEPATH is set to “/var/log/custompath”</li>
+<li>config is: param=echo $SOMEPATH/myfile</li>
+<li>param than is expanded to “/var/log/custompath/myfile”</li>
+</ul>
+<p>不支持${VAR}，一个环境变量只能被whitespace 或 / 终结。此功能的目的并不是会了模仿bash，而是为了使用自定义外界的参数 </p>
+</li>
+<li><p>cat filename - It will evaluate to the content of the given file. 只支持读取一个文件名。如果无法读取，返回空值。</p>
+</li>
+</ul>
+<p>echo和cat后只能跟一个空格</p>
+<p>Backticks are especially useful for configuration files that are auto-generated but need to contain a small set of special functionality.</p>
+<p>更多例子参考  <a target="_blank" rel="noopener" href="https://github.com/rsyslog/rsyslog-docker/tree/master/appliance/alpine">https://github.com/rsyslog/rsyslog-docker/tree/master/appliance/alpine</a>.</p>
+</li>
+</ul>
+<h1 id="Variable-Property-types-变量类型"><a href="#Variable-Property-types-变量类型" class="headerlink" title="Variable (Property) types 变量类型"></a>Variable (Property) types 变量类型</h1><p>所有的属性都能被RainerScript所调用，用$表示</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">set</span> <span class="variable">$</span>.x!host = <span class="variable">$hostname</span>;</span><br></pre></td></tr></table></figure>
+
+<p>也支持本地变量，只作用于当前消息，但并不是消息属性。（e.g. the “$!” all JSON property does not contain them）</p>
+<p>只有 消息的json(CEE/Lumberjack) 属性可以被  <strong>set</strong>, <strong>unset</strong> and <strong>reset</strong> 修改, 本地变量也可以。</p>
+<p>消息的 JSON 属性命名以  “$!” 打头，where the bang character represents the root.</p>
+<p>本地变量以 “$.” 打头, whJSere the dot denotes the root.</p>
+<p>JSON 属性和本地变量都支持任意长度的深度，! 常用来作为路径分割，无论是消息属性还是本地变量。比如 “$!path1!path2!varname” 和 “$.path1!path2!varname” 都是用!分割的，但$后的!和.区分是消息属性还是本地变量。</p>
+<p>表达式最后要加上”;”，否则语法错误</p>
+<p>参考以下例子</p>
+<h2 id="set"><a href="#set" class="headerlink" title="set"></a><strong>set</strong></h2><p>sets the value of a local-variable or json property, 如果要定义的变量已经存在内容，将会有以下几种行为方式:</p>
+<p><strong>merges</strong> 如果新值为object, 但新的值会附加到root而不是指定的key下，比如</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> $.x!one <span class="comment">=</span> <span class="comment">&quot;val_1&quot;</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125;</span><br><span class="line"><span class="keyword">set</span> $.y!two <span class="comment">=</span> <span class="comment">&quot;val_2&quot;</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span> $.z!var <span class="comment">= $.x</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span> $.z!var <span class="comment">= $.y</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125;, <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;</span><br><span class="line"># note that the key *two* is at root level <span class="keyword">and</span> <span class="keyword">not</span>  under *<span class="symbol">$</span>.z!var*.</span><br></pre></td></tr></table></figure>
+
+<p><strong>ignores</strong> 如果原内容是object，而新值为string或num等非object. Eg:</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> $.x!one <span class="comment">=</span> <span class="comment">&quot;val_1&quot;</span>;</span><br><span class="line"><span class="keyword">set</span> $.x <span class="comment">=</span> <span class="comment">&quot;quux&quot;</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125;</span><br><span class="line"># note that <span class="string">&quot;quux&quot;</span> was ignored</span><br></pre></td></tr></table></figure>
+
+<p><strong>resets</strong> 如果旧值为非object.</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> $.x!val <span class="comment">=</span> <span class="comment">&quot;val_1&quot;</span>;</span><br><span class="line"><span class="keyword">set</span> $.x!val <span class="comment">=</span> <span class="comment">&quot;quux&quot;</span>;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;val&quot;</span>: <span class="string">&quot;quux&quot;</span> &#125; &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="unset"><a href="#unset" class="headerlink" title="unset"></a><strong>unset</strong></h2><p>removes the key. Eg:</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> $.x!val <span class="comment">=</span> <span class="comment">&quot;val_1&quot;</span>;</span><br><span class="line">unset <span class="symbol">$</span>.x!val;</span><br><span class="line"># results in <span class="symbol">$</span>. = &#123; <span class="string">&quot;x&quot;</span>: &#123; &#125; &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="reset"><a href="#reset" class="headerlink" title="reset"></a><strong>reset</strong></h2><p>force sets the new value regardless of what the variable originally contained or if it was even set. Eg.</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># to contrast with the <span class="keyword">set</span> example above, here is how results would look with reset</span><br><span class="line"><span class="keyword">set</span> $.x!<span class="keyword">one</span> = <span class="string">&quot;val_1&quot;</span>;</span><br><span class="line"><span class="keyword">set</span> $.y!<span class="keyword">two</span> = <span class="string">&quot;val_2&quot;</span>;</span><br><span class="line"><span class="keyword">set</span> $.z!<span class="keyword">var</span> = $.x;</span><br><span class="line"># results <span class="keyword">in</span> $. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125; &#125; &#125;</span><br><span class="line"># &#x27;<span class="keyword">set</span>&#x27; or &#x27;reset&#x27; can be used interchangeably above(3 lines), they both have the same behaviour, <span class="keyword">as</span> variable doesn&#x27;t have <span class="keyword">an</span> existing value</span><br><span class="line"></span><br><span class="line">reset $.z!<span class="keyword">var</span> = $.y;</span><br><span class="line"># results <span class="keyword">in</span> $. = &#123; <span class="string">&quot;x&quot;</span>: &#123; <span class="string">&quot;one&quot;</span>: <span class="string">&quot;val_1&quot;</span> &#125;, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125; &#125; &#125;</span><br><span class="line"># <span class="keyword">note</span> how the value of $.z!<span class="keyword">var</span> was replaced</span><br><span class="line"></span><br><span class="line">reset $.x = <span class="string">&quot;quux&quot;</span>;</span><br><span class="line"># results <span class="keyword">in</span> $. = &#123; <span class="string">&quot;x&quot;</span>: <span class="string">&quot;quux&quot;</span>, <span class="string">&quot;y&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125;, <span class="string">&quot;z&quot;</span>: &#123; <span class="string">&quot;var&quot;</span>: &#123; <span class="string">&quot;two&quot;</span>: <span class="string">&quot;val_2&quot;</span> &#125; &#125; &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="Lookup-Tables-查找表"><a href="#Lookup-Tables-查找表" class="headerlink" title="Lookup Tables 查找表"></a>Lookup Tables 查找表</h1><p><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/lookup_tables.html">Lookup tables</a> are a powerful construct to obtain “class” information based on message content (e.g. to build log file names for different server types, departments or remote offices).</p>
+<h1 id="General-Queue-Parameters-通用队列参数"><a href="#General-Queue-Parameters-通用队列参数" class="headerlink" title="General Queue Parameters 通用队列参数"></a>General Queue Parameters 通用队列参数</h1><h2 id="Usage"><a href="#Usage" class="headerlink" title="Usage"></a>Usage</h2><p>Queue parameters can be used together with the following statements:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/actions.html">action()</a></li>
+<li>ruleset()</li>
+<li>main_queue()</li>
+</ul>
+<p>Queues need to be configured in the action or ruleset it should affect. If nothing is configured, default values will be used. Thus, the default ruleset has only the default main queue. Specific Action queues are not set up by default.</p>
+<p>To fully understand queue parameters and how they interact, be sure to read the <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/concepts/queues.html">queues</a> documentation.</p>
+<p>参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/queue_parameters.html">https://www.rsyslog.com/doc/master/rainerscript/queue_parameters.html</a></p>
+<h2 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h2><h3 id="Example-1"><a href="#Example-1" class="headerlink" title="Example 1"></a>Example 1</h3><p>The following is a sample of a TCP forwarding action with its own queue.</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;192.168.2.11&quot;</span> <span class="attribute">port</span>=<span class="string">&quot;10514&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;tcp&quot;</span></span><br><span class="line">       queue.<span class="attribute">filename</span>=<span class="string">&quot;forwarding&quot;</span> queue.<span class="attribute">size</span>=<span class="string">&quot;1000000&quot;</span> queue.<span class="attribute">type</span>=<span class="string">&quot;LinkedList&quot;</span></span><br><span class="line">      )</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="The-rsyslog-“call”-statement"><a href="#The-rsyslog-“call”-statement" class="headerlink" title="The rsyslog “call” statement"></a>The rsyslog “call” statement</h1><p>Call与ruleset联系，可以把rulesets看成是一个子程序，就容易理解call了。</p>
+<p>Call可以调用任何rulsests，如果在ruleset中存在queue，由消息发送给queue异步处理，否则会同步执行，结束后返回控制</p>
+<p>在注意同步和异步的区别</p>
+<p>Call是用来取代已经废弃的 omruleset模块，使用了新引擎，更有效率，特别是对于那些同步操作，几乎是0开销。而omrulset需要复制消息，这至少要消耗250字节的内存和一些计算性能</p>
+<h2 id="syntax"><a href="#syntax" class="headerlink" title="syntax"></a>syntax</h2><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">call</span> rulesetname</span><br></pre></td></tr></table></figure>
+
+<p>Where “rulesetname” is the name of a ruleset that is defined elsewhere inside the configuration. If the call is synchronous or asynchronous depends on the ruleset parameters. This cannot be overridden by the “call” statement.</p>
+<h2 id="related-links"><a href="#related-links" class="headerlink" title="related links"></a>related links</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://rainer.gerhards.net/2012/10/how-to-use-rsyslogs-ruleset-and-call.html">Blog posting announcing “call” statement (with sample)</a></li>
+</ul>
+<h1 id="The-rsyslog-“call-indirect”-statement"><a href="#The-rsyslog-“call-indirect”-statement" class="headerlink" title="The rsyslog “call_indirect” statement"></a>The rsyslog “call_indirect” statement</h1><p>The rsyslog “call_indirect” 类亿于 “call”，区别在于被call的ruleset不是常量，还是一个实时计算的表达式</p>
+<p>如果ruleset不存在，会产生一个错误消息，然后被跳过，继续执行下一语句</p>
+<h2 id="syntax-1"><a href="#syntax-1" class="headerlink" title="syntax"></a>syntax</h2><figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call_indirect expression<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+
+<p>Where “expression” is any valid expression. See <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/expressions.html">expressions</a> for more information. </p>
+<p>结尾要有分号</p>
+<h2 id="examples"><a href="#examples" class="headerlink" title="examples"></a>examples</h2><p> “call_indirect” 可以根据消息变量来调用ruleset，例如，rulesets以syslog tag命名，就可以这么写</p>
+<figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call_indirect <span class="symbol">$syslogtag</span>;</span><br></pre></td></tr></table></figure>
+
+<p>使用时要小心被注入，最好在ruleset前加上前缀，比如  “changeme-” :</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call_indirect <span class="string">&quot;changeme-&quot;</span> <span class="meta">&amp; $syslogtag;</span></span><br></pre></td></tr></table></figure>
+
+<p>call_indirect也可以调用常量名，比如</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call_indirect <span class="string">&quot;my_ruleset&quot;</span><span class="comment">;</span></span><br></pre></td></tr></table></figure>
+
+<p>不过常量名的调用最好还是用call，效率会高很多。</p>
+<h2 id="additional-information"><a href="#additional-information" class="headerlink" title="additional information"></a>additional information</h2><p>We need to have two different statements, “call” and “call_indirect” because “call” already existed at the time “call_indirect” was added. We could not extend “call” to support expressions, as that would have broken existing configs. In that case <code>call ruleset</code> would have become invalid and <code>call &quot;ruleset&quot;</code> would have to be used instead. Thus we decided to add the additional “call_indirect” statement for this use case.</p>
+<h1 id="global-configuration-object"><a href="#global-configuration-object" class="headerlink" title="global() configuration object"></a>global() configuration object</h1><p>允许设置全局变量，但每个变量只能设置一次，之后不能被reset。</p>
+<p>参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/global.html">https://www.rsyslog.com/doc/master/rainerscript/global.html</a></p>
+<h1 id="The-rsyslog-include-object"><a href="#The-rsyslog-include-object" class="headerlink" title="The rsyslog include() object"></a>The rsyslog include() object</h1><p>include() 可以调用 配置片断，<em>New in version 8.33.0.</em></p>
+<h2 id="How-it-Works"><a href="#How-it-Works" class="headerlink" title="How it Works"></a>How it Works</h2><p>如果不熟悉include，可以认为是一种复制粘贴。rsyslog到到要include的对象，复制内容到指定位置，然后删除include文句</p>
+<p>include时要注意位置，不同的位置可能会影响执行结果。</p>
+<h2 id="Parameters"><a href="#Parameters" class="headerlink" title="Parameters"></a>Parameters</h2><p>参数名大小写不敏感，每个include中file和text只能选其一</p>
+<h3 id="file"><a href="#file" class="headerlink" title="file"></a>file</h3><p>Name of file to be included. May include wildcards, in which case all matching files are included (in order of file name sort order).</p>
+<h3 id="text"><a href="#text" class="headerlink" title="text"></a>text</h3><p>Text to be included. This is most useful when using backtick string constants.</p>
+<h3 id="mode"><a href="#mode" class="headerlink" title="mode"></a>mode</h3><p>Affects how missing files are to be handled:</p>
+<ul>
+<li><code>abort-if-missing</code>, with rsyslog aborting when the file is not present</li>
+<li><code>required</code> <em>(default)</em>, with rsyslog emitting an error message but otherwise continuing when the file is not present</li>
+<li><code>optional</code>, which means non-present files will be skipped without notice</li>
+</ul>
+<h2 id="Examples-1"><a href="#Examples-1" class="headerlink" title="Examples"></a>Examples</h2><h3 id="Include-a-required-file"><a href="#Include-a-required-file" class="headerlink" title="Include a required file"></a>Include a required file</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">include</span><span class="params">(file=<span class="string">&quot;/path/to/include.conf&quot;</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>Note</p>
+<p>Unless otherwise specified, files referenced by an <code>include()</code> object must be present, otherwise an error will be generated.</p>
+<h3 id="Include-an-optional-file"><a href="#Include-an-optional-file" class="headerlink" title="Include an optional file"></a>Include an optional file</h3><p>The referenced file will be used if found, otherwise no errors or warnings will be generated regarding its absence.</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span>(</span><br><span class="line">   <span class="keyword">file</span>=<span class="string">&quot;/path/to/include.conf&quot;</span></span><br><span class="line">   mode=<span class="string">&quot;optional&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Include-multiple-files"><a href="#Include-multiple-files" class="headerlink" title="Include multiple files"></a>Include multiple files</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">include</span><span class="params">(file=<span class="string">&quot;/etc/rsyslog.d/*.conf&quot;</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>Note</p>
+<p>Unless otherwise specified, files referenced by an <code>include()</code> object must be present, otherwise an error will be generated.</p>
+<h3 id="Include-an-environment-variable-as-configuration"><a href="#Include-an-environment-variable-as-configuration" class="headerlink" title="Include an environment variable as configuration"></a>Include an environment variable as configuration</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">include</span><span class="params">(text=`echo <span class="variable">$ENV_VAR</span>`)</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Include-a-file-specified-via-an-environment-variable"><a href="#Include-a-file-specified-via-an-environment-variable" class="headerlink" title="Include a file specified via an environment variable"></a>Include a file specified via an environment variable</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">include</span><span class="params">(file=`echo <span class="variable">$ENV_VAR</span>`)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>Note</p>
+<p>Unless otherwise specified, files referenced by an <code>include()</code> object must be present, otherwise an error will be generated.</p>
+<h3 id="Include-an-optional-file-specified-via-an-environment-variable"><a href="#Include-an-optional-file-specified-via-an-environment-variable" class="headerlink" title="Include an optional file specified via an environment variable"></a>Include an optional file specified via an environment variable</h3><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">include(</span><br><span class="line">   <span class="attribute">file</span>=`echo <span class="variable">$ENV_VAR</span>`</span><br><span class="line">   <span class="attribute">mode</span>=<span class="string">&quot;optional&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/rsyslog/" rel="tag"># rsyslog</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/b3bbd24d/" rel="next" title="rsyslog学习7 -- Filter Conditions">
+                <i class="fa fa-chevron-left"></i> rsyslog学习7 -- Filter Conditions
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/b1781d21/" rel="prev" title="rsyslog学习9 -- Actions 动作">
+                rsyslog学习9 -- Actions 动作 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/bell.png"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#RainerScript"><span class="nav-number">1.</span> <span class="nav-text">RainerScript</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Data-Types-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">Data Types 数据类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Expressions-%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">Expressions 表达式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Functions-%E5%87%BD%E6%95%B0"><span class="nav-number">4.</span> <span class="nav-text">Functions 函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Control-Structures-%E6%8E%A7%E5%88%B6%E7%BB%93%E6%9E%84"><span class="nav-number">5.</span> <span class="nav-text">Control Structures 控制结构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#if"><span class="nav-number">5.1.</span> <span class="nav-text">if</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#if-else-if-else"><span class="nav-number">5.2.</span> <span class="nav-text">if&#x2F;else-if&#x2F;else</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#foreach"><span class="nav-number">5.3.</span> <span class="nav-text">foreach</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#call"><span class="nav-number">5.4.</span> <span class="nav-text">call</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#continue"><span class="nav-number">5.5.</span> <span class="nav-text">continue</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#configuration-objects-%E9%85%8D%E7%BD%AE%E5%AF%B9%E8%B1%A1"><span class="nav-number">6.</span> <span class="nav-text">configuration objects 配置对象</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Common-Parameters"><span class="nav-number">6.1.</span> <span class="nav-text">Common Parameters</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#config-enabled"><span class="nav-number">6.1.1.</span> <span class="nav-text">config.enabled</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Objects"><span class="nav-number">6.2.</span> <span class="nav-text">Objects</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#action"><span class="nav-number">6.2.1.</span> <span class="nav-text">action()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#global"><span class="nav-number">6.2.2.</span> <span class="nav-text">global()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#input"><span class="nav-number">6.2.3.</span> <span class="nav-text">input()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#module"><span class="nav-number">6.2.4.</span> <span class="nav-text">module()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#parser"><span class="nav-number">6.2.5.</span> <span class="nav-text">parser()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#timezone"><span class="nav-number">6.2.6.</span> <span class="nav-text">timezone()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#include"><span class="nav-number">6.2.7.</span> <span class="nav-text">include()</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#String-Constants-%E5%AD%97%E4%B8%B2%E5%B8%B8%E9%87%8F"><span class="nav-number">7.</span> <span class="nav-text">String Constants 字串常量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Uses"><span class="nav-number">7.1.</span> <span class="nav-text">Uses</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Types"><span class="nav-number">7.2.</span> <span class="nav-text">Types</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Variable-Property-types-%E5%8F%98%E9%87%8F%E7%B1%BB%E5%9E%8B"><span class="nav-number">8.</span> <span class="nav-text">Variable (Property) types 变量类型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#set"><span class="nav-number">8.1.</span> <span class="nav-text">set</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#unset"><span class="nav-number">8.2.</span> <span class="nav-text">unset</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reset"><span class="nav-number">8.3.</span> <span class="nav-text">reset</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Lookup-Tables-%E6%9F%A5%E6%89%BE%E8%A1%A8"><span class="nav-number">9.</span> <span class="nav-text">Lookup Tables 查找表</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#General-Queue-Parameters-%E9%80%9A%E7%94%A8%E9%98%9F%E5%88%97%E5%8F%82%E6%95%B0"><span class="nav-number">10.</span> <span class="nav-text">General Queue Parameters 通用队列参数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Usage"><span class="nav-number">10.1.</span> <span class="nav-text">Usage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Examples"><span class="nav-number">10.2.</span> <span class="nav-text">Examples</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Example-1"><span class="nav-number">10.2.1.</span> <span class="nav-text">Example 1</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-rsyslog-%E2%80%9Ccall%E2%80%9D-statement"><span class="nav-number">11.</span> <span class="nav-text">The rsyslog “call” statement</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#syntax"><span class="nav-number">11.1.</span> <span class="nav-text">syntax</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#related-links"><span class="nav-number">11.2.</span> <span class="nav-text">related links</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-rsyslog-%E2%80%9Ccall-indirect%E2%80%9D-statement"><span class="nav-number">12.</span> <span class="nav-text">The rsyslog “call_indirect” statement</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#syntax-1"><span class="nav-number">12.1.</span> <span class="nav-text">syntax</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#examples"><span class="nav-number">12.2.</span> <span class="nav-text">examples</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#additional-information"><span class="nav-number">12.3.</span> <span class="nav-text">additional information</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#global-configuration-object"><span class="nav-number">13.</span> <span class="nav-text">global() configuration object</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-rsyslog-include-object"><span class="nav-number">14.</span> <span class="nav-text">The rsyslog include() object</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#How-it-Works"><span class="nav-number">14.1.</span> <span class="nav-text">How it Works</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Parameters"><span class="nav-number">14.2.</span> <span class="nav-text">Parameters</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#file"><span class="nav-number">14.2.1.</span> <span class="nav-text">file</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#text"><span class="nav-number">14.2.2.</span> <span class="nav-text">text</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mode"><span class="nav-number">14.2.3.</span> <span class="nav-text">mode</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Examples-1"><span class="nav-number">14.3.</span> <span class="nav-text">Examples</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Include-a-required-file"><span class="nav-number">14.3.1.</span> <span class="nav-text">Include a required file</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Include-an-optional-file"><span class="nav-number">14.3.2.</span> <span class="nav-text">Include an optional file</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Include-multiple-files"><span class="nav-number">14.3.3.</span> <span class="nav-text">Include multiple files</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Include-an-environment-variable-as-configuration"><span class="nav-number">14.3.4.</span> <span class="nav-text">Include an environment variable as configuration</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Include-a-file-specified-via-an-environment-variable"><span class="nav-number">14.3.5.</span> <span class="nav-text">Include a file specified via an environment variable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Include-an-optional-file-specified-via-an-environment-variable"><span class="nav-number">14.3.6.</span> <span class="nav-text">Include an optional file specified via an environment variable</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Seaky</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">18k</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+      <div id="needsharebutton-float">
+        <span class="btn">
+          <i class="fa fa-share-alt" aria-hidden="true"></i>
+        </span>
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '5wqIQ2T2tGwUuw4A2BeYIhKw-gzGzoHsz',
+        appKey: 'rugnSK3XneQp4jyP53QBKTsj',
+        placeholder: '说点什么吧',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+    
+      flOptions = {};
+      
+          flOptions.iconStyle = "box";
+      
+          flOptions.boxForm = "horizontal";
+      
+          flOptions.position = "topRight";
+      
+          flOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
+      
+      new needShareButton('#needsharebutton-float', flOptions);
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

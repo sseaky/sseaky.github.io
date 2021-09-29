@@ -79,15 +79,15 @@
 
 
 
-<meta name="description" content="​    年初搭建了一套ELK来收集现网中网络设备日志，通过设备发送syslog到各idc的rsyslog中转服务器，再转发到kafka，用logstash写入es。因为之前没有做过滤，跑了半年，发现日志量有点大，因为设备型号比较多，cisco&#x2F;hw&#x2F;zte&#x2F;ruijie&#x2F;h3c&#x2F;dptech&#x2F;f5，发的日志也千奇百怪，里面有很多无用的message，对于查找也存在干扰，所以决定好好的对日志进行一">
+<meta name="description" content="Filter Conditionsrsyslog支持以下条件  传统的severity和facility Property-Based Filters 基于属性 基于表达式 BSD-style blocks（不再向后兼容）  SelectorsSelectors 是传统的筛选方式. 简洁，高效，特别是在v7中，比advanced模式高效，目前的版本中两者已经没有差别。 Selector 由 fac">
 <meta property="og:type" content="article">
-<meta property="og:title" content="rsyslog学习1 -- 配置格式">
-<meta property="og:url" content="https://sseaky.github.io/posts/f6bedc4e/index.html">
+<meta property="og:title" content="rsyslog学习7 -- Filter Conditions">
+<meta property="og:url" content="https://sseaky.github.io/posts/b3bbd24d/index.html">
 <meta property="og:site_name" content="Seaky&#39;s Blog">
-<meta property="og:description" content="​    年初搭建了一套ELK来收集现网中网络设备日志，通过设备发送syslog到各idc的rsyslog中转服务器，再转发到kafka，用logstash写入es。因为之前没有做过滤，跑了半年，发现日志量有点大，因为设备型号比较多，cisco&#x2F;hw&#x2F;zte&#x2F;ruijie&#x2F;h3c&#x2F;dptech&#x2F;f5，发的日志也千奇百怪，里面有很多无用的message，对于查找也存在干扰，所以决定好好的对日志进行一">
+<meta property="og:description" content="Filter Conditionsrsyslog支持以下条件  传统的severity和facility Property-Based Filters 基于属性 基于表达式 BSD-style blocks（不再向后兼容）  SelectorsSelectors 是传统的筛选方式. 简洁，高效，特别是在v7中，比advanced模式高效，目前的版本中两者已经没有差别。 Selector 由 fac">
 <meta property="og:locale">
-<meta property="article:published_time" content="2021-09-27T07:15:20.000Z">
-<meta property="article:modified_time" content="2021-09-28T08:22:57.471Z">
+<meta property="article:published_time" content="2021-09-28T08:14:20.000Z">
+<meta property="article:modified_time" content="2021-09-28T09:53:35.474Z">
 <meta property="article:author" content="Seaky">
 <meta property="article:tag" content="rsyslog">
 <meta name="twitter:card" content="summary">
@@ -120,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="https://sseaky.github.io/posts/f6bedc4e/"/>
+  <link rel="canonical" href="https://sseaky.github.io/posts/b3bbd24d/"/>
 
 
 
 
 
-  <title>rsyslog学习1 -- 配置格式 | Seaky's Blog</title>
+  <title>rsyslog学习7 -- Filter Conditions | Seaky's Blog</title>
   
 
 
@@ -297,7 +297,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/f6bedc4e/">
+    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/b3bbd24d/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -314,7 +314,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">rsyslog学习1 -- 配置格式</h1>
+          <h1 class="post-title" itemprop="name headline">rsyslog学习7 -- Filter Conditions</h1>
         
 
         <div class="post-meta">
@@ -326,8 +326,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-27T15:15:20+08:00">
-                2021-09-27
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-28T16:14:20+08:00">
+                2021-09-28
               </time>
             
 
@@ -345,8 +345,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/posts/f6bedc4e/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/posts/f6bedc4e/" itemprop="commentCount"></span>
+                <a href="/posts/b3bbd24d/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/posts/b3bbd24d/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -368,7 +368,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  723
+                  979
                 </span>
               
 
@@ -384,7 +384,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
@@ -405,91 +405,63 @@
       
 
       
-        <p>​    年初搭建了一套ELK来收集现网中网络设备日志，通过设备发送syslog到各idc的rsyslog中转服务器，再转发到kafka，用logstash写入es。因为之前没有做过滤，跑了半年，发现日志量有点大，因为设备型号比较多，cisco/hw/zte/ruijie/h3c/dptech/f5，发的日志也千奇百怪，里面有很多无用的message，对于查找也存在干扰，所以决定好好的对日志进行一下过滤。    </p>
-<p>​    过滤可以布置在两个点，一是rsyslog服务器上，二是logstash。所以先从服务器入手，好好的学习一下rsyslog的配置。主要参考<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/index.html">文档</a></p>
-<h1 id="配置格式"><a href="#配置格式" class="headerlink" title="配置格式"></a>配置格式</h1><h2 id="basic"><a href="#basic" class="headerlink" title="basic"></a>basic</h2><p>​    又叫 sysklogd 格式。基本配置，一句一行，用了多年。</p>
-<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mail.info /<span class="keyword">var</span>/<span class="keyword">log</span>/mail.<span class="keyword">log</span></span><br><span class="line">mail.<span class="keyword">err</span> @@server.example.<span class="keyword">net</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="advanced"><a href="#advanced" class="headerlink" title="advanced"></a>advanced</h2><p>​    又叫 RainerScript 格式。v6开始支持，v7有性能问题，目前版本(v8)正常使用。</p>
+        <h1 id="Filter-Conditions"><a href="#Filter-Conditions" class="headerlink" title="Filter Conditions"></a>Filter Conditions</h1><p>rsyslog支持以下条件</p>
 <ul>
-<li>更多的参数，更好的控制</li>
-<li>使用块结构</li>
-<li>容易编写</li>
-<li>可以使用include</li>
+<li>传统的severity和facility</li>
+<li>Property-Based Filters 基于属性</li>
+<li>基于表达式</li>
+<li>BSD-style blocks（不再向后兼容）</li>
 </ul>
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mail.err action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;tcp&quot;</span> queue.<span class="attribute">type</span>=<span class="string">&quot;linkedList&quot;</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="Selectors"><a href="#Selectors" class="headerlink" title="Selectors"></a>Selectors</h2><p><strong>Selectors 是传统的筛选方式.</strong> 简洁，高效，特别是在v7中，比advanced模式高效，目前的版本中两者已经没有差别。</p>
+<p>Selector 由 facility和priority组成，由”.”分割，大小写敏感，可以写成十进制数字，但最好不这么做。个体可以参考syslog(3). 这些名字在文件/usr/include/syslog.h 定义，类似  LOG_-values </p>
+<p>facility 关键字: auth, authpriv, cron, daemon, kern, lpr, mail, mark, news, security (same as auth), syslog, user, uucp and local0 through local7。 security 不应被再被app使用。</p>
+<p>Priority : debug, info, notice, warning, warn (same as warning), err, error (same as err), crit, alert, emerg, panic (same as emerg). The keywords error, warn and panic are deprecated and should not be used anymore. The priority defines the severity of the message.</p>
+<p>rsyslog和syslog行为类似，并有一些扩展，比如理解(“*’‘)和none，也可以使用”,”指定多个多个priority. 也可以指定多个facility，但要注意的时，如果是多个facility语句，priority将被忽略</p>
+<p>多个selectors可以(“;’‘)连接，后者覆盖前者，还可以使用(“=’‘)和(“!’‘)</p>
+<h2 id="Property-Based-Filters"><a href="#Property-Based-Filters" class="headerlink" title="Property-Based Filters"></a>Property-Based Filters</h2><p>rsyslogd特有。可以过滤任何属性。参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/properties.html">rsyslog properties documentation</a> </p>
+<p>property-based filter以”:”起始，后跟属性名字，然后是”,”，比较操作符，”,”，比较值（用双引号包围）。逗号之间可以有空格和tab。属性名和比较符大小写敏感。</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:<span class="keyword">property</span><span class="title"></span>, [!]compare-operation, <span class="string">&quot;value&quot;</span></span><br></pre></td></tr></table></figure>
 
-<h2 id="obsolete-legacy"><a href="#obsolete-legacy" class="headerlink" title="obsolete legacy"></a>obsolete legacy</h2><p>​    又叫 legacy 格式。如其名，已被 obsoleted。</p>
-<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$ModLoad</span> <span class="keyword">module</span>-name</span><br></pre></td></tr></table></figure>
+<h3 id="Compare-Operations"><a href="#Compare-Operations" class="headerlink" title="Compare-Operations"></a>Compare-Operations</h3><p><strong>contains</strong></p>
+<p>​    是否包含某值，精确匹配，不支持通配符</p>
+<p><strong>isequal</strong></p>
+<p>​    两者必须精确匹配，一般用于 syslogtag or FROMHOST</p>
+<p><strong>startswith</strong></p>
+<p>​    Checks if the value is found exactly at the beginning of the property value. For example, if you search for “val” with</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">:msg</span>, startswith, <span class="string">&quot;val&quot;</span></span><br></pre></td></tr></table></figure>
 
+<p>​    可匹配 “values are in this message” 但不匹配 “There are values in this message” (<em>“contains”</em> 可以). startswith远比regex高效</p>
+<p><strong>regex</strong></p>
+<p>​    Compares the property against the provided POSIX BRE regular expression.</p>
+<p><strong>ereregex</strong></p>
+<p>​    Compares the property against the provided POSIX ERE regular expression.</p>
+<p>可在比较操作之前使用(!)来反向操作。比如 “This is an informative message”</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 不匹配</span></span><br><span class="line">:msg, <span class="keyword">contains</span>, <span class="string">&quot;error&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 匹配</span></span><br><span class="line">:msg, !<span class="keyword">contains</span>, <span class="string">&quot;error&quot;</span></span><br></pre></td></tr></table></figure>
 
+<h3 id="Value-Part"><a href="#Value-Part" class="headerlink" title="Value Part"></a>Value Part</h3><p>vaule是一个引号间的字串，支持一些转义</p>
+<p>“ - the quote character (e.g. “String with “Quotes””)</p>
+<p>\ - the backslash character (e.g. “C:\tmp”)</p>
+<p>一般来说，主要是针对真实的 msg 做一些过滤</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 注意，大小写敏感，不会匹配“id-4711”</span></span><br><span class="line">:msg, <span class="keyword">contains</span>, <span class="string">&quot;ID-4711&quot;</span></span><br></pre></td></tr></table></figure>
 
-<h1 id="将配置转为-advanced"><a href="#将配置转为-advanced" class="headerlink" title="将配置转为 advanced"></a>将配置转为 advanced</h1><h2 id="不要过度转换"><a href="#不要过度转换" class="headerlink" title="不要过度转换"></a>不要过度转换</h2><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mail.info   <span class="regexp">/var/</span>log/maillog</span><br></pre></td></tr></table></figure>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># 匹配 fatal和<span class="meta-keyword">error</span>，中间任何字符。</span></span><br><span class="line">msg, regex, <span class="string">&quot;fatal .* error&quot;</span></span><br></pre></td></tr></table></figure>
 
-<p>​    一些basic的配置不需要转换，保持就好。如果要转的话，可以转成</p>
-<figure class="highlight isbl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable"><span class="keyword">if</span></span> <span class="function"><span class="title">prifilt</span>(<span class="string">&quot;mail.info&quot;</span>) <span class="variable">then</span> &#123;</span></span><br><span class="line"><span class="function">     <span class="title">action</span>(<span class="variable">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="variable">file</span>=<span class="string">&quot;/var/log/maillog&quot;</span>)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用属性过滤是一个挑战，可以使用debug来测试，rsyslogd -d</p>
+<p>不支持布尔操作，如果要过滤facility或severity，建议使用 selectors</p>
+<h2 id="Expression-Based-Filters"><a href="#Expression-Based-Filters" class="headerlink" title="Expression-Based Filters"></a>Expression-Based Filters</h2><p>可以过滤任意复杂的表达式，包括布尔，算术和字串操作，类似于完整的脚本语言，不过在语法有些许区别。</p>
+<p>表达式过滤以关键字 if 开始，类似于</p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">expr</span> then action-part-of-selector-<span class="keyword">line</span></span><br></pre></td></tr></table></figure>
 
-<p>或</p>
-<figure class="highlight isbl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable"><span class="keyword">if</span></span> <span class="function"><span class="title">prifilt</span>(<span class="string">&quot;mail.info&quot;</span>) <span class="variable">then</span> <span class="title">action</span>(<span class="variable">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="variable">file</span>=<span class="string">&quot;/var/log/maillog&quot;</span>)</span></span><br></pre></td></tr></table></figure>
+<p>if 和 then是关键字，必有存在，expr是表达式，参考 <a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/rainerscript/expressions.html">expression documentation</a> ，action-part-of-selector-line是action</p>
+<h2 id="BSD-style-Blocks"><a href="#BSD-style-Blocks" class="headerlink" title="BSD-style Blocks"></a>BSD-style Blocks</h2><p>v7+不再支持，所以不建议再使用</p>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">*.* <span class="regexp">/var/</span>log/file1 <span class="comment"># 传统方式</span></span><br><span class="line"><span class="keyword">if</span> <span class="variable">$msg</span> contains <span class="string">&#x27;error&#x27;</span> then <span class="regexp">/var/</span>log/errlog <span class="comment"># 基于表达式的方式</span></span><br></pre></td></tr></table></figure>
 
-<p>或</p>
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mail.<span class="builtin-name">info</span> action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/maillog&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>Right now, you need to specify numerical values if you would like to check for facilities and severity. These can be found in <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc5424.html"><strong>RFC 5424</strong></a>. If you don’t like that, you can of course also use the textual property - just be sure to use the right one. As expression support is enhanced, this will change. For example, if you would like to filter on message that have facility local0, start with “DEVNAME” and have either “error1” or “error0” in their message content, you could use the following filter:</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 必须在一行</span></span><br><span class="line"><span class="keyword">if</span> <span class="variable">$syslogfacility</span>-text == <span class="string">&#x27;local0&#x27;</span> and <span class="variable">$msg</span> startswith <span class="string">&#x27;DEVNAME&#x27;</span> and (<span class="variable">$msg</span> contains <span class="string">&#x27;error1&#x27;</span> or <span class="variable">$msg</span> contains <span class="string">&#x27;error0&#x27;</span>) then <span class="regexp">/var/</span>log/somelog</span><br></pre></td></tr></table></figure>
 
-<h2 id="转换module"><a href="#转换module" class="headerlink" title="转换module"></a>转换module</h2><p>​    legacy语法在多次引用时容易出现问题</p>
-<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"><span class="meta-keyword">$ModLoad</span> module-name</span></span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="meta-keyword">$ModLoad</span> imtcp</span></span><br><span class="line"><span class="meta"><span class="meta-keyword">$InputTCPMaxSession</span> 500</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果要保存除了 error1 或 error0 的日志，只要加上 not</span></span><br><span class="line"><span class="keyword">if</span> <span class="variable">$syslogfacility</span>-text == <span class="string">&#x27;local0&#x27;</span> and <span class="variable">$msg</span> startswith <span class="string">&#x27;DEVNAME&#x27;</span> and not (<span class="variable">$msg</span> contains <span class="string">&#x27;error1&#x27;</span> or <span class="variable">$msg</span> contains <span class="string">&#x27;error0&#x27;</span>) then <span class="regexp">/var/</span>log/somelog</span><br></pre></td></tr></table></figure>
 
-<p>​    可以转换为</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">module</span><span class="params">(load=<span class="string">&quot;module-name&quot;</span>)</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">module</span><span class="params">(load=<span class="string">&quot;imtcp&quot;</span> maxSessions=<span class="string">&quot;500&quot;</span>)</span></span></span><br></pre></td></tr></table></figure>
-
-<h2 id="转换action"><a href="#转换action" class="headerlink" title="转换action"></a>转换action</h2><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">filter</span> action</span><br></pre></td></tr></table></figure>
-
-<p>​    转换action并不一定要转换filter，因为不同格式的filter都可以和action一起工作</p>
-<p>​    下面列了一些从basic到advance的action转换</p>
-<table>
-<thead>
-<tr>
-<th align="left"><code>basic</code></th>
-<th align="left"><code>advanced</code></th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">file path (/var/log/…)</td>
-<td align="left">action(type=”<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/omfile.html">omfile</a>” file=”/var/log…/” …)</td>
-</tr>
-<tr>
-<td align="left">UDP forwarding (@remote)</td>
-<td align="left">action(type=”<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/omfwd.html">omfwd</a>” target=”remote” protocol=”udp” …)</td>
-</tr>
-<tr>
-<td align="left">TCP forwarding (@@remote)</td>
-<td align="left">action(type=”<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/omfwd.html">omfwd</a>” target=”remote” protocol=”tcp” …)</td>
-</tr>
-<tr>
-<td align="left">user notify (<code>:omusrmsg:user</code>)</td>
-<td align="left">action(type=”<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/omusrmsg.html">omusrmsg</a>” users=”user” …)</td>
-</tr>
-<tr>
-<td align="left">module name (<code>:omxxx:..</code>)</td>
-<td align="left">action(type=”<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/modules/idx_output.html">omxxx</a>” …)</td>
-</tr>
-</tbody></table>
-<p>​    例如</p>
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">OLD: :hostname, contains, <span class="string">&quot;remote-sender&quot;</span> @@central</span><br><span class="line">NEW: :hostname, contains, <span class="string">&quot;remote-sender&quot;</span> action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;central&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;tcp&quot;</span>)</span><br><span class="line"></span><br><span class="line">OLD: <span class="keyword">if</span> <span class="variable">$msg</span> contains <span class="string">&quot;error&quot;</span> then @central</span><br><span class="line">NEW: <span class="keyword">if</span> <span class="variable">$msg</span> contains <span class="string">&quot;error&quot;</span> then action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;central&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;udp&quot;</span>)</span><br><span class="line"></span><br><span class="line">OLD: *.emerg :omusrmsg:*</span><br><span class="line">NEW: *.emerg action(<span class="attribute">type</span>=<span class="string">&quot;omusrmsg&quot;</span> <span class="attribute">users</span>=<span class="string">&quot;*&quot;</span>)</span><br></pre></td></tr></table></figure>
-
-<h2 id="带多个参数的action转换"><a href="#带多个参数的action转换" class="headerlink" title="带多个参数的action转换"></a>带多个参数的action转换</h2><p>​    在basic中，多个action可以使用 &amp; 来连接。</p>
-<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">*.<span class="built_in">error</span> /var/<span class="built_in">log</span>/<span class="keyword">errorlog</span></span><br><span class="line">&amp;       <span class="comment">@remote</span></span><br></pre></td></tr></table></figure>
-
-<p>​    在advanced中，使用block来表示</p>
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">*.<span class="builtin-name">error</span> &#123;</span><br><span class="line">        action(<span class="attribute">type</span>=<span class="string">&quot;omfile&quot;</span> <span class="attribute">file</span>=<span class="string">&quot;/var/log/errorlog&quot;</span>)</span><br><span class="line">        action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;remote&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;udp&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​    使用 stop 或 ~ 来停止动作</p>
-<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">:msg</span>, contains, <span class="string">&quot;error&quot;</span> <span class="variable">@remote</span></span><br><span class="line">&amp; ~</span><br><span class="line"></span><br><span class="line"><span class="symbol">:msg</span>, contains, <span class="string">&quot;error&quot;</span> <span class="variable">@remote</span></span><br><span class="line">&amp; stop</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">:msg, contains, <span class="string">&quot;error&quot;</span> &#123;</span><br><span class="line">        action(<span class="attribute">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="attribute">target</span>=<span class="string">&quot;remote&quot;</span> <span class="attribute">protocol</span>=<span class="string">&quot;udp&quot;</span>)</span><br><span class="line">        stop</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>或</p>
-<figure class="highlight puppet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if <span class="variable">$msg</span> contains <span class="string">&quot;error&quot;</span> <span class="keyword">then</span> &#123;</span><br><span class="line">        action(<span class="built_in">type</span>=<span class="string">&quot;omfwd&quot;</span> <span class="literal">target</span>=<span class="string">&quot;remote&quot;</span> protocol=<span class="string">&quot;udp&quot;</span>)</span><br><span class="line">        <span class="literal">stop</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<p>如果要忽略大小写的比较，使用 “contains_i” 代替 “contains” ，使用 “startswith_i” 代替 “startswith”. 注意，表达式过滤<strong>不支持</strong>正则表达式</p>
 
       
     </div>
@@ -520,8 +492,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/posts/66ee5de4/" rel="next" title="filebeat netflow模块输出kafka多topic问题">
-                <i class="fa fa-chevron-left"></i> filebeat netflow模块输出kafka多topic问题
+              <a href="/posts/26f3d7b2/" rel="next" title="rsyslog学习6 -- The Property Replacer">
+                <i class="fa fa-chevron-left"></i> rsyslog学习6 -- The Property Replacer
               </a>
             
           </div>
@@ -530,8 +502,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/posts/6fb78df4/" rel="prev" title="rsyslog学习2 -- sysklogd 格式">
-                rsyslog学习2 -- sysklogd 格式 <i class="fa fa-chevron-right"></i>
+              <a href="/posts/4411ca20/" rel="prev" title="rsyslog学习8 -- RainerScript">
+                rsyslog学习8 -- RainerScript <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -671,7 +643,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">配置格式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#basic"><span class="nav-number">1.1.</span> <span class="nav-text">basic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#advanced"><span class="nav-number">1.2.</span> <span class="nav-text">advanced</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#obsolete-legacy"><span class="nav-number">1.3.</span> <span class="nav-text">obsolete legacy</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%86%E9%85%8D%E7%BD%AE%E8%BD%AC%E4%B8%BA-advanced"><span class="nav-number">2.</span> <span class="nav-text">将配置转为 advanced</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E8%A6%81%E8%BF%87%E5%BA%A6%E8%BD%AC%E6%8D%A2"><span class="nav-number">2.1.</span> <span class="nav-text">不要过度转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AC%E6%8D%A2module"><span class="nav-number">2.2.</span> <span class="nav-text">转换module</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AC%E6%8D%A2action"><span class="nav-number">2.3.</span> <span class="nav-text">转换action</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%A6%E5%A4%9A%E4%B8%AA%E5%8F%82%E6%95%B0%E7%9A%84action%E8%BD%AC%E6%8D%A2"><span class="nav-number">2.4.</span> <span class="nav-text">带多个参数的action转换</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Filter-Conditions"><span class="nav-number">1.</span> <span class="nav-text">Filter Conditions</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Selectors"><span class="nav-number">1.1.</span> <span class="nav-text">Selectors</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Property-Based-Filters"><span class="nav-number">1.2.</span> <span class="nav-text">Property-Based Filters</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Compare-Operations"><span class="nav-number">1.2.1.</span> <span class="nav-text">Compare-Operations</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Value-Part"><span class="nav-number">1.2.2.</span> <span class="nav-text">Value Part</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Expression-Based-Filters"><span class="nav-number">1.3.</span> <span class="nav-text">Expression-Based Filters</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BSD-style-Blocks"><span class="nav-number">1.4.</span> <span class="nav-text">BSD-style Blocks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90"><span class="nav-number">1.5.</span> <span class="nav-text">例子</span></a></li></ol></li></ol></div>
             
 
           </div>

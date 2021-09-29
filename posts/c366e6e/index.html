@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="rsyslog," />
 
 
 
@@ -79,12 +79,17 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Seaky&#39;s Blog">
-<meta property="og:url" content="https://sseaky.github.io/tags/rsyslog%E5%9F%BA%E6%9C%AC/index.html">
+<meta name="description" content="PropertiesProperties 属性rsyslog中的数据项称为Properties，有些来源于消息，有些来源于其它 Properties被用于  模板 条件声明  Properties是大小写敏感的 Properties也有被称为variables，两者意义相同，区别可参考 rsyslog lead author Rainer Gerhards explains the naming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rsyslog学习5 -- Properties">
+<meta property="og:url" content="https://sseaky.github.io/posts/c366e6e/index.html">
 <meta property="og:site_name" content="Seaky&#39;s Blog">
+<meta property="og:description" content="PropertiesProperties 属性rsyslog中的数据项称为Properties，有些来源于消息，有些来源于其它 Properties被用于  模板 条件声明  Properties是大小写敏感的 Properties也有被称为variables，两者意义相同，区别可参考 rsyslog lead author Rainer Gerhards explains the naming">
 <meta property="og:locale">
+<meta property="article:published_time" content="2021-09-28T01:16:36.000Z">
+<meta property="article:modified_time" content="2021-09-28T08:23:23.150Z">
 <meta property="article:author" content="Seaky">
+<meta property="article:tag" content="rsyslog">
 <meta name="twitter:card" content="summary">
 
 
@@ -115,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="https://sseaky.github.io/tags/rsyslog基本/"/>
+  <link rel="canonical" href="https://sseaky.github.io/posts/c366e6e/"/>
 
 
 
 
 
-  <title>标签: rsyslog基本 | Seaky's Blog</title>
+  <title>rsyslog学习5 -- Properties | Seaky's Blog</title>
   
 
 
@@ -150,7 +155,7 @@
     
   
 
-  <div class="container sidebar-position-right ">
+  <div class="container sidebar-position-right page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -278,54 +283,324 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>rsyslog基本<small>标签</small>
-        </h1>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://sseaky.github.io/posts/c366e6e/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/bell.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Seaky's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/posts/6bfe5ff2/" itemprop="url">
-              
-                <span itemprop="name">rsyslog学习3--基本结构</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">rsyslog学习5 -- Properties</h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2021-09-27T17:18:11+08:00"
-              content="2021-09-27" >
-          09-27
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-09-28T09:16:36+08:00">
+                2021-09-28
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/c366e6e/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/posts/c366e6e/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  7
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Properties"><a href="#Properties" class="headerlink" title="Properties"></a>Properties</h1><h1 id="Properties-属性"><a href="#Properties-属性" class="headerlink" title="Properties 属性"></a>Properties 属性</h1><p>rsyslog中的数据项称为Properties，有些来源于消息，有些来源于其它</p>
+<p>Properties被用于</p>
+<ul>
+<li>模板</li>
+<li>条件声明</li>
+</ul>
+<p>Properties是大小写敏感的</p>
+<p>Properties也有被称为variables，两者意义相同，区别可参考 <a target="_blank" rel="noopener" href="https://rainer.gerhards.net/2020/08/rsyslog-template-variables-where-to-find-them.html%22">rsyslog lead author Rainer Gerhards explains the naming difference</a> ，（最初properties是不可变的，但后来引入了可变的properties, 成了variable properties）</p>
+<h2 id="消息属性"><a href="#消息属性" class="headerlink" title="消息属性"></a>消息属性</h2><p>rsyslog会从原始消息中解析出许多属性，所有的消息属性以字母开始。</p>
+<p><strong>msg</strong></p>
+<p>the MSG part of the message (aka “the message” ;))</p>
+<p><strong>rawmsg</strong></p>
+<p>原始消息，一般用来debug或需要原封不动的转发时。需要注意的是 <em>EscapecontrolCharactersOnReceive</em> 默认被启用，这可能会导致转发的消息有所改变</p>
+<p><strong>rawmsg-after-pri</strong></p>
+<p>移除了PRI的rawmsg。如果本来就没有PRI，那rawmsg-after-pri就等同于rawmsg。PRI是syslog的消息头部中，包含了facility和severity的信息。由 &lt;&gt; 包围，比如&lt;191&gt;。这个字段通常不写入日志，但常用来进行消息分类。</p>
+<p><strong>hostname</strong></p>
+<p>hostname from the message</p>
+<p><strong>source</strong></p>
+<p>alias for HOSTNAME</p>
+<p><strong>fromhost</strong></p>
+<p>消息从认证那接受，对于多个转发的链路，这代表了上一个发送者，而非原始发送者。这是一个DNS解析的名字，除非解析失败或者解析被禁用</p>
+<p><strong>fromhost-ip</strong></p>
+<p>The same as fromhost, but always as an IP address. Local inputs (like imklog) use 127.0.0.1 in this property.</p>
+<p><strong>syslogtag</strong></p>
+<p>TAG from the message</p>
+<p><strong>programname</strong></p>
+<p>BSD syslogd中定义的tag的static部分。比如 “named[12345]”, programname 就是 “named”。</p>
+<p>确切的说，programname会被以下字符终结</p>
+<ul>
+<li>end of tag</li>
+<li>nonprintable character</li>
+<li>‘:’</li>
+<li>‘[‘</li>
+<li>‘/’</li>
+</ul>
+<p>如果你的程序包含了 ‘/‘，比如 “app/foo[1234]”，那programname就是app，如果是绝对路径比如“/app/foo[1234]”, programname 为空 (“”)。如果确实需要保存 ‘/‘，可以设置全局选项global(parser.permitSlashInProgramName=”on”) 来启用. </p>
+<p>Note: this option is available starting at rsyslogd version 8.25.0.</p>
+<p><strong>pri</strong></p>
+<p>PRI part of the message - undecoded (single value)，数字</p>
+<p><strong>pri-text</strong></p>
+<p>the PRI part of the message in a textual form with the numerical PRI appended in brackets (e.g. “local0.err&lt;133&gt;”)</p>
+<p><strong>iut</strong></p>
+<p>the monitorware InfoUnitType - used when talking to a <a target="_blank" rel="noopener" href="https://www.monitorware.com/">MonitorWare</a> backend (also for <a target="_blank" rel="noopener" href="https://loganalyzer.adiscon.com/">Adiscon LogAnalyzer</a>)</p>
+<p><strong>syslogfacility</strong></p>
+<p>the facility from the message - in numerical form</p>
+<p><strong>syslogfacility-text</strong></p>
+<p>the facility from the message - in text form</p>
+<p><strong>syslogseverity</strong></p>
+<p>severity from the message - in numerical form</p>
+<p><strong>syslogseverity-text</strong></p>
+<p>severity from the message - in text form</p>
+<p><strong>syslogpriority</strong></p>
+<p>an alias for syslogseverity - included for historical reasons (be careful: it still is the severity, not PRI!)</p>
+<p>仍是sererity，不是PRI！！</p>
+<p><strong>syslogpriority-text</strong></p>
+<p>an alias for syslogseverity-text</p>
+<p><strong>timegenerated</strong></p>
+<p>timestamp when the message was RECEIVED. Always in high resolution</p>
+<p><strong>timereported</strong></p>
+<p>timestamp from the message. Resolution depends on what was provided in the message (in most cases, only seconds)</p>
+<p><strong>timestamp</strong></p>
+<p>alias for timereported</p>
+<p><strong>protocol-version</strong></p>
+<p>The contents of the PROTOCOL-VERSION field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>structured-data</strong></p>
+<p>The contents of the STRUCTURED-DATA field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>app-name</strong></p>
+<p>The contents of the APP-NAME field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>procid</strong></p>
+<p>The contents of the PROCID field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>msgid</strong></p>
+<p>The contents of the MSGID field from IETF draft draft-ietf-syslog-protocol</p>
+<p><strong>inputname</strong></p>
+<p>产生消息的imput module名 (e.g. “imuxsock”, “imudp”). 并不是所有的module会提供这个字段，可以留空，名字也可以随意定义，并不一定是真实的module名。</p>
+<p><strong>jsonmesg</strong></p>
+<blockquote>
+<p><em>Available since rsyslog 8.3.0</em></p>
+<p>The whole message object as JSON representation. Note that the JSON string will <em>not</em> include an LF and it will contain <em>all other message properties</em> specified here as respective JSON containers. It also includes all message variables in the “$!” subtree (this may be null if none are present).</p>
+<p>This property is primarily meant as an interface to other systems and tools that want access to the full property set (namely external plugins). Note that it contains the same data items potentially multiple times. For example, parts of the syslog tag will by contained in the rawmsg, syslogtag, and programname properties. As such, this property has some additional overhead. Thus, it is suggested to be used only when there is actual need for it.</p>
+</blockquote>
+<h2 id="System-Properties"><a href="#System-Properties" class="headerlink" title="System Properties"></a>System Properties</h2><p>rsyslog引擎产生的properties，和消息本身无关，名字以$开始</p>
+<p>注意一些时间相关的系统变量：</p>
+<ul>
+<li><code>timereported</code> 消息头部中的时间戳，代表消息产生的时间，取决于转发链的长度，这个时间有可能比当前落后很多</li>
+<li><code>timegenerated</code>  本地系统收到消息的时间。本地rsyslog接受缓存收到的时，在任何处理之前。如果buffer接收了多条消息，那这些消息的 <code>timegenerated</code>都是一样的</li>
+<li><code>$now</code> is <strong>not</strong> from the message. 系统开始处理消息的时间。与 <code>timegenerated</code>会有一些差异。 如果消息在队列中长时间等待，那差异可能会达到秒级，甚至小时级。</li>
+</ul>
+<p>一些系统属性：</p>
+<ul>
+<li><p><strong>$bom</strong></p>
+<p>The UTF-8 encoded Unicode byte-order mask (BOM). This may be useful in templates for RFC5424 support, when the character set is know to be Unicode.</p>
+</li>
+<li><p><strong>$myhostname</strong></p>
+<p>The name of the current host as it knows itself (probably useful for filtering in a generic way)</p>
+</li>
+</ul>
+<h3 id="Time-Related-System-Properties"><a href="#Time-Related-System-Properties" class="headerlink" title="Time-Related System Properties"></a>Time-Related System Properties</h3><p>以下这些系统属性存在于本地时间变量中（$now）和 UTC（￥now-utc）中。utc相关的变量都以“-utc” 结尾。在一个模板中，本地时间和UTC只能取其一。</p>
+<p>不同的模板在使用 $now时，可能会产生不同的结果，为了避免这种情况，建议使用 <em>timegenerated</em> 。</p>
+<ul>
+<li><p><strong>$now</strong></p>
+<p>The current date stamp in the format YYYY-MM-DD</p>
+</li>
+<li><p><strong>$year</strong></p>
+<p>The current year (4-digit)</p>
+</li>
+<li><p><strong>$month</strong></p>
+<p>The current month (2-digit)</p>
+</li>
+<li><p><strong>$day</strong></p>
+<p>The current day of the month (2-digit)</p>
+</li>
+<li><p><strong>$wday</strong></p>
+<p>The current week day as defined by ‘gmtime()’. 0=Sunday, …, 6=Saturday</p>
+</li>
+<li><p><strong>$hour</strong></p>
+<p>The current hour in military (24 hour) time (2-digit)</p>
+</li>
+<li><p><strong>$hhour</strong></p>
+<p>The current half hour we are in. From minute 0 to 29, this is always 0 while from 30 to 59 it is always 1.</p>
+</li>
+<li><p><strong>$qhour</strong></p>
+<p>The current quarter hour we are in. Much like $HHOUR, but values range from 0 to 3 (for the four quarter hours that are in each hour)</p>
+</li>
+<li><p><strong>$minute</strong></p>
+<p>The current minute (2-digit)</p>
+</li>
+<li><p><strong>$now-unixtimestamp</strong></p>
+<p>The current time as a unix timestamp (seconds since epoch). This actually is a monotonically increasing counter and as such can also be used for any other use cases that require such counters. This is an example of how to use it for rate-limiting:</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Get Unix timestamp of current message</span></span><br><span class="line"><span class="built_in">set</span> <span class="variable">$</span>.tnow = <span class="variable">$</span><span class="variable">$now</span><span class="literal">-unixtimestamp</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Rate limit info to 5 every 60 seconds</span></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$</span>!severity == <span class="number">6</span> and <span class="variable">$</span>!facility == <span class="number">17</span>) then &#123;</span><br><span class="line">  <span class="keyword">if</span> ((<span class="variable">$</span>.tnow - <span class="variable">$</span>/trate) &gt; <span class="number">60</span>) then &#123;</span><br><span class="line">    <span class="comment"># 5 seconds window expired, allow more messages</span></span><br><span class="line">    <span class="built_in">set</span> <span class="variable">$</span>/trate = <span class="variable">$</span>.tnow;</span><br><span class="line">    <span class="built_in">set</span> <span class="variable">$</span>/ratecount = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="variable">$</span>/ratecount &gt; <span class="number">5</span>) then &#123;</span><br><span class="line">    <span class="comment"># discard message</span></span><br><span class="line">    stop</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">set</span> <span class="variable">$</span>/ratecount = <span class="variable">$</span>/ratecount + <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>NOTE: by definition, there is no “UTC equivalent” of the $now-unixtimestamp property.</p>
+</li>
+</ul>
 
       
     </div>
+    
+    
+    
 
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/rsyslog/" rel="tag"># rsyslog</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/77ee3c23/" rel="next" title="rsyslog学习4 -- Templates">
+                <i class="fa fa-chevron-left"></i> rsyslog学习4 -- Templates
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/26f3d7b2/" rel="prev" title="rsyslog学习6 -- The Property Replacer">
+                rsyslog学习6 -- The Property Replacer <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -333,6 +608,13 @@
 
 
           
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
 
         </div>
         
@@ -353,8 +635,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -373,7 +664,7 @@
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -395,7 +686,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -418,6 +709,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Properties"><span class="nav-number">1.</span> <span class="nav-text">Properties</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Properties-%E5%B1%9E%E6%80%A7"><span class="nav-number">2.</span> <span class="nav-text">Properties 属性</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%B1%9E%E6%80%A7"><span class="nav-number">2.1.</span> <span class="nav-text">消息属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#System-Properties"><span class="nav-number">2.2.</span> <span class="nav-text">System Properties</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Time-Related-System-Properties"><span class="nav-number">2.2.1.</span> <span class="nav-text">Time-Related System Properties</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -447,7 +754,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">7k</span>
+    <span title="Site words total count">18k</span>
   
 </div>
 
@@ -570,6 +877,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
