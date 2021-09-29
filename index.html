@@ -1336,7 +1336,7 @@
 <h3 id="Character-Positions"><a href="#Character-Positions" class="headerlink" title="Character Positions"></a>Character Positions</h3><p><strong>FromChar</strong> 和<strong>toChar</strong> 用来截字串，它们代表偏移量，从1开始计数。截取前两个字符语法为: “%msg:1:2%”. 如果只使用options，冒号还是需要的。比如 “%msg:::lowercase%”. 如果要截取从某位置到末尾，设置toChar为 (“$”)  (e.g. %msg:10:$%, which will extract from position 10 to the end of the string).</p>
 <p>支持正则表达式。设置FromChar为“R”，rsyslog就会知道使用正则面不是位置参数，表达式放在toChar上，必须以“–end” 结尾。rsyslog会返回匹配的部分。比如 “%msg:R:.*Sev:. (.*) [.*–end%”</p>
 <p>在 “R” 后还可以支持一些参数</p>
-<p>R,<regexp-type>,<submatch>,<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/nomatch.html"><nomatch></a>,<match-number></p>
+<p>R,&lt;regexp-type&gt;,&lt;submatch&gt;,<a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/nomatch.html">&lt;nomatch&gt;</a>,&lt;match-number&gt;</p>
 <p>regexp-type 可以使用 “BRE” for Posix basic regular expressions or “ERE” for extended ones. 必须要大写. 早期的版本只支持BRE。submatch指示器指示使用哪一个submatch结果，支持单数字。0表示整个匹配，1 to 9 为实际submatch. match-number 表示使用哪一个结果，从0开始。最多支持10个（数字是9）</p>
 <p><a target="_blank" rel="noopener" href="https://www.rsyslog.com/doc/master/configuration/nomatch.html">nomatch</a> 指示如果没有匹配将使用的值</p>
 <p>这个例子使用ERE规则，从消息提取第一个子匹配，如果没有匹配，则使用整个字段</p>
