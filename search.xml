@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>rsyslog学习9 -- Actions 动作</title>
+    <title>rsyslog学习9 -- Actions动作</title>
     <url>/posts/b1781d21/</url>
     <content><![CDATA[<h1 id="Actions-动作"><a href="#Actions-动作" class="headerlink" title="Actions 动作"></a>Actions 动作</h1><p>The Action object describe what is to be done with a message. They are implemented via <a href="https://www.rsyslog.com/doc/master/configuration/modules/idx_output.html">output modules</a>.</p>
 <p>The action object has different parameters:</p>
@@ -403,7 +403,7 @@
       </tags>
   </entry>
   <entry>
-    <title>rsyslog学习7 -- Filter Conditions</title>
+    <title>rsyslog学习7 -- Filter Conditions过滤条件</title>
     <url>/posts/b3bbd24d/</url>
     <content><![CDATA[<h1 id="Filter-Conditions"><a href="#Filter-Conditions" class="headerlink" title="Filter Conditions"></a>Filter Conditions</h1><p>rsyslog支持以下条件</p>
 <ul>
@@ -468,7 +468,7 @@
       </tags>
   </entry>
   <entry>
-    <title>rsyslog学习6 -- The Property Replacer</title>
+    <title>rsyslog学习6 -- The Property Replacer属性替换</title>
     <url>/posts/26f3d7b2/</url>
     <content><![CDATA[<h1 id="The-Property-Replacer-属性替换"><a href="#The-Property-Replacer-属性替换" class="headerlink" title="The Property Replacer 属性替换"></a>The Property Replacer 属性替换</h1><p>The Property Replacer 是 rsyslogd的 字符模板的核心组件，用来操纵属性值</p>
 <h2 id="Accessing-Properties"><a href="#Accessing-Properties" class="headerlink" title="Accessing Properties"></a>Accessing Properties</h2><p>通过两个 % 读取属性，并被修改，语法如下</p>
@@ -651,7 +651,7 @@
       </tags>
   </entry>
   <entry>
-    <title>rsyslog学习5 -- Properties</title>
+    <title>rsyslog学习5 -- Properties属性</title>
     <url>/posts/c366e6e/</url>
     <content><![CDATA[<h1 id="Properties"><a href="#Properties" class="headerlink" title="Properties"></a>Properties</h1><h1 id="Properties-属性"><a href="#Properties-属性" class="headerlink" title="Properties 属性"></a>Properties 属性</h1><p>rsyslog中的数据项称为Properties，有些来源于消息，有些来源于其它</p>
 <p>Properties被用于</p>
@@ -792,7 +792,7 @@
       </tags>
   </entry>
   <entry>
-    <title>rsyslog学习4 -- Templates</title>
+    <title>rsyslog学习4 -- Templates模板</title>
     <url>/posts/77ee3c23/</url>
     <content><![CDATA[<h1 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h1><p>模板用来指定格式，动态文件名生成。所有的output都会用到模板。不光是文件输出，写入到数据库也需要合适的模块来组成语句。如果没有指定模板，会调用默认的模块，可以在rsconf.c中搜索”template_”查看。</p>
 <p>模板使用 template() 声明，在legacy中，使用 $template</p>
